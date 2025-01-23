@@ -9,7 +9,7 @@ export class BotCentersService {
   async showCenters(ctx: Context, language: string) {
     const centers = await this.centerService.findAll();
     const keyboardCenters = centers.map((center) => [
-      { text: center.name[language], callback_data: `center_${center.id}` },
+      { text: center.name[language], callback_data: `services_${center.id}` },
     ]);
 
     await ctx.reply("Выберите центр", {

@@ -8,8 +8,11 @@
         "iin": "020918551468",
         "phone": "+77083707975",
         "language": "ru",
-        "full_name": "sdfsdf",
-        "registrationStep": "full_name"
+        "full_name": "Джетенбаев Максат",
+        "centerId": "1",
+        "serviceId": "1",
+        "selectedSubServiceId": 5,
+        "date": "31.01.2025"
       }
     },
     {
@@ -17,9 +20,12 @@
       "data": {
         "__scenes": {},
         "fullName": "Маратов Еркебулан Махсатович",
-        "iin": "030624551035",
-        "phone": "+77081117900",
-        "registrationStep": "fullName"
+        "iin": "123456789098",
+        "phone": "+77762854975",
+        "language": "ru",
+        "full_name": "макс макс 228",
+        "centerId": "1",
+        "selectedSubServiceId": 4
       }
     }
   ]

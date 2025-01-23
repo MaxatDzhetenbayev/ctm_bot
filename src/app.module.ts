@@ -7,6 +7,7 @@ import { CentersModule } from "./manage/centers/centers.module";
 import { ServicesModule } from "./manage/services/services.module";
 import { BotCentersModule } from "./bot/bot_centers/bot_centers.module";
 import { BotAuthModule } from './bot/bot_auth/bot_auth.module';
+import { BotServicesModule } from './bot/bot_services/bot_services.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { BotAuthModule } from './bot/bot_auth/bot_auth.module';
     ServicesModule,
     BotCentersModule,
     BotAuthModule,
+    BotServicesModule,
   ],
 })
 export class AppModule {}

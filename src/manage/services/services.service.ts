@@ -65,8 +65,28 @@ export class ServicesService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} service`;
+  async findOne(id: number) {
+    try {
+      const service = await this.serviceRepository.findOne({
+        where: { id },
+        attributes: ["id", "name"],
+        include: {
+          model: this.serviceRepository,
+          as: "children",
+          attributes: ["id", "name"],
+        },
+      });
+
+      if (!service) {
+        this.logger.error(`Сервис не найден: ${id}`);
+        new NotFoundException("Сервис не найден");
+      }
+
+      return service;
+    } catch (error) {
+      this.logger.error(`Ошибка при получении сервиса: ${error}`);
+      new InternalServerErrorException("Ошибка при получении сервиса");
+    }
   }
 
   update(id: number, updateServiceDto: UpdateServiceDto) {
