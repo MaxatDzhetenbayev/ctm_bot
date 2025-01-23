@@ -8,6 +8,8 @@ import { Role } from "src/default/users/entities/role.entity";
 import { User } from "src/default/users/entities/user.entity";
 import { Center } from "src/manage/centers/entities/center.entity";
 import { ManagersCenter } from "src/manage/centers/entities/managers_center.entity";
+import { ManagerServices } from "src/manage/services/entities/manager-services.entity";
+import { Service } from "src/manage/services/entities/service.entity";
 import * as LocalSession from "telegraf-session-local";
 
 const sessions = new LocalSession({ database: "session_db.json" });
@@ -33,7 +35,15 @@ const sessions = new LocalSession({ database: "session_db.json" });
         password: configService.get<string>("DB_PASSWORD"),
         database: configService.get<string>("DB_NAME"),
         logging: false,
-        models: [User, Role, Profile, Center, ManagersCenter],
+        models: [
+          User,
+          Role,
+          Profile,
+          Center,
+          ManagersCenter,
+          Service,
+          ManagerServices,
+        ],
       }),
     }),
     ConfigModule.forRoot({

@@ -9,8 +9,10 @@ import {
 } from "sequelize-typescript";
 import { Role } from "./role.entity";
 import { Profile } from "./profile.entity";
-import { Center } from 'src/manage/centers/entities/center.entity';
-import { ManagersCenter } from 'src/manage/centers/entities/managers_center.entity';
+import { Center } from "src/manage/centers/entities/center.entity";
+import { ManagersCenter } from "src/manage/centers/entities/managers_center.entity";
+import { Service } from "src/manage/services/entities/service.entity";
+import { ManagerServices } from "src/manage/services/entities/manager-services.entity";
 
 export enum AuthType {
   telegram = "telegram",
@@ -48,4 +50,7 @@ export class User extends Model<User> {
 
   @BelongsToMany(() => Center, () => ManagersCenter)
   centers: Center[];
+
+  @BelongsToMany(() => Service, () => ManagerServices)
+  services: Service[];
 }
