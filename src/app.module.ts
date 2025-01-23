@@ -6,8 +6,8 @@ import { UsersModule } from "./default/users/users.module";
 import { CentersModule } from "./manage/centers/centers.module";
 import { ServicesModule } from "./manage/services/services.module";
 import { BotCentersModule } from "./bot/bot_centers/bot_centers.module";
-import { BotAuthModule } from './bot/bot_auth/bot_auth.module';
-import { BotServicesModule } from './bot/bot_services/bot_services.module';
+import { BotAuthModule } from "./bot/bot_auth/bot_auth.module";
+import { BotServicesModule } from "./bot/bot_services/bot_services.module";
 
 @Module({
   imports: [

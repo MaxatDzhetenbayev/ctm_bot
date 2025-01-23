@@ -5,7 +5,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { ManagersCenter } from "./managers_center.entity";
+import { UsersCenter } from "./managers_center.entity";
 import { User } from "src/default/users/entities/user.entity";
 
 @Table({
@@ -18,6 +18,6 @@ export class Center extends Model<Center> {
   })
   name: Record<string, string>;
 
-  @BelongsToMany(() => User, () => ManagersCenter)
+  @BelongsToMany(() => User, () => UsersCenter)
   users: User[];
 }

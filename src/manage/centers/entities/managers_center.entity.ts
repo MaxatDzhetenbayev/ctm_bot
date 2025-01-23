@@ -3,12 +3,12 @@ import { User } from "src/default/users/entities/user.entity";
 import { Center } from "./center.entity";
 
 @Table({
-  tableName: "managers_center",
+  tableName: "users_center",
   timestamps: false,
 })
-export class ManagersCenter extends Model<ManagersCenter> {
+export class UsersCenter extends Model<UsersCenter> {
   @ForeignKey(() => User)
-  manager_id: number;
+  user_id: number;
   @ForeignKey(() => Center)
   center_id: number;
 }

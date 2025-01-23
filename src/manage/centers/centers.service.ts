@@ -7,15 +7,15 @@ import { CreateCenterDto } from "./dto/create-center.dto";
 import { UpdateCenterDto } from "./dto/update-center.dto";
 import { InjectModel } from "@nestjs/sequelize";
 import { Center } from "./entities/center.entity";
-import { ManagersCenter } from "./entities/managers_center.entity";
+import { UsersCenter } from "./entities/managers_center.entity";
 
 @Injectable()
 export class CentersService {
   constructor(
     @InjectModel(Center)
     private centerRepository: typeof Center,
-    @InjectModel(ManagersCenter)
-    private managersCenterRepository: typeof ManagersCenter
+    @InjectModel(UsersCenter)
+    private usersCenterRepository: typeof UsersCenter
   ) {}
 
   private readonly logger = new Logger(this.centerRepository.name);
