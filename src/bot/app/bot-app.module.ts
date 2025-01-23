@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
-import { BotAppService } from "./bot-app.service";
 import { BotAppController } from "./bot-app.controller";
 import { UsersModule } from "src/default/users/users.module";
-import { CentersModule } from "src/manage/centers/centers.module";
+import { BotCentersModule } from "../bot_centers/bot_centers.module";
+import { BotAuthModule } from "../bot_auth/bot_auth.module";
 
 @Module({
-  providers: [BotAppService, BotAppController],
-  imports: [UsersModule, CentersModule],
+  providers: [BotAppController],
+  imports: [UsersModule, BotCentersModule, BotAuthModule],
 })
 export class BotAppModule {}

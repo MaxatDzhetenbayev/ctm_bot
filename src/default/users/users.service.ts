@@ -100,8 +100,6 @@ export class UsersService {
       },
     });
 
-    console.log(user);
-
     return !!user;
   }
 }
