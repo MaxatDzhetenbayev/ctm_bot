@@ -5,13 +5,13 @@ const { DataType } = require("sequelize-typescript");
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface) {
-    await queryInterface.createTable("managers_centers", {
+    await queryInterface.createTable("users_centers", {
       id: {
         type: DataType.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      manager_id: {
+      user_id: {
         type: DataType.INTEGER,
         references: {
           model: "users",
@@ -32,6 +32,6 @@ module.exports = {
     });
   },
   async down(queryInterface) {
-    await queryInterface.dropTable("managers_centers");
+    await queryInterface.dropTable("users_centers");
   },
 };
