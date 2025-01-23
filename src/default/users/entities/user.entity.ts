@@ -1,5 +1,6 @@
 import {
   BelongsTo,
+  BelongsToMany,
   Column,
   ForeignKey,
   HasOne,
@@ -8,6 +9,8 @@ import {
 } from "sequelize-typescript";
 import { Role } from "./role.entity";
 import { Profile } from "./profile.entity";
+import { Center } from 'src/manage/centers/entities/center.entity';
+import { ManagersCenter } from 'src/manage/centers/entities/managers_center.entity';
 
 export enum AuthType {
   telegram = "telegram",
@@ -42,4 +45,7 @@ export class User extends Model<User> {
     foreignKey: "id",
   })
   profile: Profile;
+
+  @BelongsToMany(() => Center, () => ManagersCenter)
+  centers: Center[];
 }

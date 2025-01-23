@@ -3,6 +3,11 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { SequelizeModule } from "@nestjs/sequelize";
 import * as Joi from "joi";
 import { TelegrafModule } from "nestjs-telegraf";
+import { Profile } from "src/default/users/entities/profile.entity";
+import { Role } from "src/default/users/entities/role.entity";
+import { User } from "src/default/users/entities/user.entity";
+import { Center } from "src/manage/centers/entities/center.entity";
+import { ManagersCenter } from "src/manage/centers/entities/managers_center.entity";
 import * as LocalSession from "telegraf-session-local";
 
 const sessions = new LocalSession({ database: "session_db.json" });
@@ -27,8 +32,8 @@ const sessions = new LocalSession({ database: "session_db.json" });
         username: configService.get<string>("DB_USER"),
         password: configService.get<string>("DB_PASSWORD"),
         database: configService.get<string>("DB_NAME"),
-        autoLoadModels: true,
         logging: false,
+        models: [User, Role, Profile, Center, ManagersCenter],
       }),
     }),
     ConfigModule.forRoot({
