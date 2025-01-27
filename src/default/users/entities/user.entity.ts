@@ -3,6 +3,7 @@ import {
   BelongsToMany,
   Column,
   ForeignKey,
+  HasMany,
   HasOne,
   Model,
   Table,
@@ -10,9 +11,10 @@ import {
 import { Role } from "./role.entity";
 import { Profile } from "./profile.entity";
 import { Center } from "src/manage/centers/entities/center.entity";
-import { ManagersCenter } from "src/manage/centers/entities/managers_center.entity";
+import { UsersCenter } from "src/manage/centers/entities/users_center.entity";
 import { Service } from "src/manage/services/entities/service.entity";
 import { ManagerServices } from "src/manage/services/entities/manager-services.entity";
+import { Reception } from "src/manage/receptions/entities/reception.entity";
 
 export enum AuthType {
   telegram = "telegram",
@@ -48,9 +50,18 @@ export class User extends Model<User> {
   })
   profile: Profile;
 
-  @BelongsToMany(() => Center, () => ManagersCenter)
+  @BelongsToMany(() => Center, () => UsersCenter)
   centers: Center[];
 
   @BelongsToMany(() => Service, () => ManagerServices)
   services: Service[];
+
+  @HasMany(() => Reception, { foreignKey: "user_id", as: "user_receptions" })
+  user_receptions!: Reception[];
+
+  @HasMany(() => Reception, {
+    foreignKey: "manager_id",
+    as: "manager_works",
+  })
+  manager_works!: Reception[];
 }

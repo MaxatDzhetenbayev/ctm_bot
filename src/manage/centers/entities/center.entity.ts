@@ -5,7 +5,7 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
-import { UsersCenter } from "./managers_center.entity";
+import { UsersCenter } from "./users_center.entity";
 import { User } from "src/default/users/entities/user.entity";
 
 @Table({

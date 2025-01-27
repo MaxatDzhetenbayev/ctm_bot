@@ -7,7 +7,9 @@ import { Profile } from "src/default/users/entities/profile.entity";
 import { Role } from "src/default/users/entities/role.entity";
 import { User } from "src/default/users/entities/user.entity";
 import { Center } from "src/manage/centers/entities/center.entity";
-import { ManagersCenter } from "src/manage/centers/entities/managers_center.entity";
+import { UsersCenter } from "src/manage/centers/entities/users_center.entity";
+import { Reception } from "src/manage/receptions/entities/reception.entity";
+import { ReceptionStatus } from "src/manage/receptions/entities/reception_status.entity";
 import { ManagerServices } from "src/manage/services/entities/manager-services.entity";
 import { Service } from "src/manage/services/entities/service.entity";
 import * as LocalSession from "telegraf-session-local";
@@ -34,15 +36,18 @@ const sessions = new LocalSession({ database: "session_db.json" });
         username: configService.get<string>("DB_USER"),
         password: configService.get<string>("DB_PASSWORD"),
         database: configService.get<string>("DB_NAME"),
-        logging: false,
+        logging: true,
+        timezone: "+5:00",
         models: [
           User,
           Role,
           Profile,
           Center,
-          ManagersCenter,
+          UsersCenter,
           Service,
           ManagerServices,
+          Reception,
+          ReceptionStatus,
         ],
       }),
     }),

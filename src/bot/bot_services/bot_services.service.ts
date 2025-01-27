@@ -6,6 +6,7 @@ export class BotServicesService {
   constructor(private readonly servicesService: ServicesService) {}
 
   async showServices(ctx, centerId) {
+	console.log(centerId)
     ctx.session.centerId = centerId;
 
     const services = await this.servicesService.findAll();

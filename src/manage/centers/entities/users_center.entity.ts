@@ -1,9 +1,9 @@
-import { Column, ForeignKey, Model, Table } from "sequelize-typescript";
+import { ForeignKey, Model, Table } from "sequelize-typescript";
 import { User } from "src/default/users/entities/user.entity";
 import { Center } from "./center.entity";
 
 @Table({
-  tableName: "users_center",
+  tableName: "users_centers",
   timestamps: false,
 })
 export class UsersCenter extends Model<UsersCenter> {

@@ -100,6 +100,6 @@ export class UsersService {
       },
     });
 
-    return !!user;
+    return user;
   }
 }
