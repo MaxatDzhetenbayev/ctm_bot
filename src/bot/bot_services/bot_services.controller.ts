@@ -15,7 +15,7 @@ export class BotServicesController {
 
   @Action(/services_(.+)/)
   async onServices(@Ctx() ctx: Context) {
-    ctx.deleteMessage();
+   //  ctx.deleteMessage();
     const centerId = ctx.match[1];
 
     await this.botServicesService.showServices(ctx, centerId);
@@ -23,7 +23,7 @@ export class BotServicesController {
 
   @Action(/service_(.+)/)
   async onService(@Ctx() ctx: Context) {
-    ctx.deleteMessage();
+   //  ctx.deleteMessage();
     const serviceId = ctx.match[1];
     await this.botServicesService.showService(ctx, serviceId);
   }
@@ -33,13 +33,10 @@ export class BotServicesController {
     const subServiceId = parseInt(ctx.match[1]);
     ctx.session.serviceId = subServiceId;
 
-    this.getChoiceDatePropmpt(ctx);
+    this.botServicesService.getChoiceDatePropmpt(ctx);
   }
 
-  //   TODO: Установка времени
-  // 1. Если мы будем заранее предлагать уже доступные временные слоты, то нам нужно будет проверять их доступность
-  // 2. Тогда нам нужно
-  @Action(/^date_(\d{4}-\d{2}-\d{2})$/) // date_2025-01-24
+  @Action(/^date_(\d{4}-\d{2}-\d{2})$/)
   async onDateSelected(ctx: Context) {
     const selectedDate = ctx.match[1];
     const formattedDate = moment.utc(selectedDate).startOf("day").toISOString();
@@ -51,7 +48,6 @@ export class BotServicesController {
       ctx.session.date
     );
 
-    // Разбиение массива на подмассивы по 8 кнопок
     const keyboard = [];
     for (let i = 0; i < timeSlots.length; i += 4) {
       keyboard.push(
@@ -62,9 +58,8 @@ export class BotServicesController {
       );
     }
 
-    console.log(keyboard);
 
-    ctx.deleteMessage();
+   //  ctx.deleteMessage();
 
     await ctx.reply(`Выберите время на дату: ${selectedDate}`, {
       reply_markup: {
@@ -75,7 +70,7 @@ export class BotServicesController {
 
   @Action(/^pre_appointment_(\d{2}:\d{2})$/)
   async onAppointmentSelected(ctx: Context) {
-    ctx.deleteMessage();
+   //  ctx.deleteMessage();
 
     const time = ctx.match[1];
     ctx.session.time = time;
@@ -104,7 +99,7 @@ export class BotServicesController {
 
   @Action("confirm_appointment")
   async onAppointmentConfirm(ctx: Context) {
-    ctx.deleteMessage();
+   //  ctx.deleteMessage();
 
     const user = await this.userService.validateUser(ctx.from.id.toString());
 
@@ -143,43 +138,5 @@ export class BotServicesController {
     	\nДата: ${moment(reception.date).format("DD.MM.YYYY")}
     	\nВремя: ${reception.time}`
     );
-  }
-
-  async getChoiceDatePropmpt(ctx: Context) {
-    ctx.deleteMessage();
-
-    const today = moment();
-    const weekdays = this.getWeekdays(today);
-
-    const keyboard = [];
-    for (let i = 0; i < weekdays.length; i += 4) {
-      const row = weekdays.slice(i, i + 3).map((weekday) => ({
-        text: weekday.format("DD.MM.YYYY"),
-        callback_data: `date_${weekday.format("YYYY-MM-DD")}`,
-      }));
-      keyboard.push(row);
-    }
-
-    await ctx.reply("Выберите дату для посещения.", {
-      reply_markup: {
-        inline_keyboard: keyboard,
-      },
-    });
-  }
-
-  getWeekdays(startDate: moment.Moment): moment.Moment[] {
-    const weekdays = [];
-    let currentDate = startDate.clone();
-    let count = 0;
-
-    while (weekdays.length < 7) {
-      if (currentDate.day() !== 6 && currentDate.day() !== 0) {
-        weekdays.push(currentDate.clone());
-      }
-      currentDate.add(1, "days");
-      count++;
-    }
-
-    return weekdays;
   }
 }
