@@ -70,6 +70,8 @@ export class NotificationsService {
       ],
     });
 
+    if (receptions.length === 0) return;
+
     for (const reception of receptions) {
       this.bot.telegram.sendMessage(
         reception.user.telegram_id,
@@ -82,7 +84,5 @@ export class NotificationsService {
     	  `
       );
     }
-
-    return receptions;
   }
 }
