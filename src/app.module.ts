@@ -9,6 +9,7 @@ import { BotCentersModule } from "./bot/bot_centers/bot_centers.module";
 import { BotAuthModule } from "./bot/bot_auth/bot_auth.module";
 import { BotServicesModule } from "./bot/bot_services/bot_services.module";
 import { ReceptionsModule } from "./manage/receptions/receptions.module";
+import { NotificationsModule } from "./default/notifications/notifications.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ReceptionsModule } from "./manage/receptions/receptions.module";
     BotAuthModule,
     BotServicesModule,
     ReceptionsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

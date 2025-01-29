@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ScheduleModule } from "@nestjs/schedule";
 import { SequelizeModule } from "@nestjs/sequelize";
 import * as Joi from "joi";
 import { TelegrafModule } from "nestjs-telegraf";
@@ -27,6 +28,7 @@ const sessions = new LocalSession({ database: "session_db.json" });
         token: configService.get<string>("BOT_TOKEN"),
       }),
     }),
+    ScheduleModule.forRoot(),
     SequelizeModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
