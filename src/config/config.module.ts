@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { SequelizeModule } from "@nestjs/sequelize";
 import * as Joi from "joi";
 import { TelegrafModule } from "nestjs-telegraf";
+import { ManagerTable } from "src/default/users/entities/manager-table.entity";
 import { Profile } from "src/default/users/entities/profile.entity";
 import { Role } from "src/default/users/entities/role.entity";
 import { User } from "src/default/users/entities/user.entity";
@@ -48,6 +49,7 @@ const sessions = new LocalSession({ database: "session_db.json" });
           ManagerServices,
           Reception,
           ReceptionStatus,
+          ManagerTable,
         ],
       }),
     }),

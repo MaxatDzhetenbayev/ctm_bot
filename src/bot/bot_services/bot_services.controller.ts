@@ -132,15 +132,16 @@ export class BotServicesController {
       return;
     }
 
-    const { reception, center, service, profile } = data;
+    const { reception, center, service, profile, table } = data;
 
     await ctx.reply(
-      `Вы успешно записаны! 
-		\nЦентр: ${center[ctx.session.language]}
-		\nСервис: ${service[ctx.session.language]}
-		\nМенеджер: ${profile.full_name}
-		\nДата: ${moment(reception.date).format("DD.MM.YYYY")}
-		\nВремя: ${reception.time}`
+      `Вы успешно записаны!
+    	\nЦентр: ${center[ctx.session.language]}
+    	\nСервис: ${service[ctx.session.language]}
+    	\nМенеджер: ${profile.full_name}
+    	\nСтол: ${table}
+    	\nДата: ${moment(reception.date).format("DD.MM.YYYY")}
+    	\nВремя: ${reception.time}`
     );
   }
 

@@ -4,6 +4,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
+import { Sequelize } from "sequelize-typescript";
 import sequelize from "sequelize";
 
 import { Center } from "../centers/entities/center.entity";
@@ -11,7 +12,6 @@ import { Reception } from "./entities/reception.entity";
 import { User } from "src/default/users/entities/user.entity";
 import { Service } from "../services/entities/service.entity";
 import { Role } from "src/default/users/entities/role.entity";
-import { Profile } from "src/default/users/entities/profile.entity";
 
 @Injectable()
 export class ReceptionsService {
@@ -19,7 +19,8 @@ export class ReceptionsService {
     @InjectModel(Reception)
     private receptionRepository: typeof Reception,
     @InjectModel(User)
-    private userRepository: typeof User
+    private userRepository: typeof User,
+    private readonly sequelize: Sequelize
   ) {}
 
   logger = new Logger(ReceptionsService.name);
@@ -120,6 +121,7 @@ export class ReceptionsService {
     time: string;
   }) {
     const { date, time, center_id, service_id, user_id } = body;
+    const transaction = await this.sequelize.transaction();
 
     try {
       const managers = await this.userRepository.findAll({
@@ -211,7 +213,7 @@ export class ReceptionsService {
         throw new InternalServerErrorException("Нет свободных менеджеров");
       }
 
-      const reception = await this.create({
+      const reception = await this.receptionRepository.create({
         user_id,
         manager_id: leastBusyManager.id,
         status_id: 2,
@@ -224,14 +226,16 @@ export class ReceptionsService {
         throw new InternalServerErrorException("Ошибка при создании приема");
       }
 
-      const leastBusyManagerProfile = await leastBusyManager.$get("profile");
+      const managerProfile = await leastBusyManager.$get("profile");
+      const { table } = await leastBusyManager.$get("manager_table");
 
       const center = leastBusyManager.get("centers")[0].name;
       const service = leastBusyManager.get("services")[0].name;
 
       return {
         reception,
-        profile: leastBusyManagerProfile,
+        profile: managerProfile,
+        table,
         center,
         service,
       };

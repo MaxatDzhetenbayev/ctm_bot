@@ -18,6 +18,8 @@ module.exports = {
           model: "users",
           key: "id",
         },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       center_id: {
         type: DataType.INTEGER,
@@ -26,9 +28,11 @@ module.exports = {
           model: "centers",
           key: "id",
         },
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       },
       table: {
-        type: DataType.STRING,
+        type: DataType.INTEGER,
         allowNull: false,
       },
     });
