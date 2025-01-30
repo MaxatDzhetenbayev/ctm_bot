@@ -21,7 +21,7 @@ export class NotificationsService {
     @InjectBot() private readonly bot: Telegraf
   ) {}
 
-  @Cron("0,30 * * * *")
+  @Cron("0 */30 9-19 * * 1-5")
   async sendReminders() {
     const date = new Date().toISOString();
 
