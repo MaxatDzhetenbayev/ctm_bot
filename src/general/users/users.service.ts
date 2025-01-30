@@ -59,28 +59,13 @@ export class UsersService {
         );
       }
 
-      // const roleInstance = await this.rolesRepository.findOne({
-      //   where: {
-      //     name: role,
-      //   },
-      //   transaction,
-      // });
-
-      // if (!roleInstance) {
-      //   this.logger.error("Ошибка при создании роли пользователя");
-      //   throw new InternalServerErrorException(
-      //     "Ошибка при создании роли пользователя"
-      //   );
-      // }
-
-      // await user.$set("role", roleInstance, { transaction });
+      await user.$set("role", role, { transaction });
 
       await transaction.commit();
 
       const result = {
         user: user.toJSON(),
         profile: profile.toJSON(),
-        //   role: roleInstance.toJSON(),
       };
 
       return result;
