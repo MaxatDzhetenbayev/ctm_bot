@@ -70,7 +70,7 @@ export class BotAppController {
       ctx.session.registrationStep = undefined;
       const { full_name, iin, phone } = ctx.session;
 
-      await this.userService.createUser({
+      await this.userService.createUserByTelegram({
         full_name,
         iin,
         phone,

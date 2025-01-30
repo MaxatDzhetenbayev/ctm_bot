@@ -4,11 +4,10 @@ import {
   Logger,
 } from "@nestjs/common";
 import { User } from "./entities/user.entity";
-import { Role } from "./entities/role.entity";
 import { Profile } from "./entities/profile.entity";
 import { InjectModel } from "@nestjs/sequelize";
 import { Sequelize } from "sequelize-typescript";
-import { CreateUserDto } from "./dto/create-user.dto";
+import { CreateUserByTelegramDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -17,14 +16,14 @@ export class UsersService {
     private readonly usersRepository: typeof User,
     @InjectModel(Profile)
     private readonly profilesRepository: typeof Profile,
-    @InjectModel(Role)
-    private readonly rolesRepository: typeof Role,
     private readonly sequelize: Sequelize
   ) {}
 
   private readonly logger = new Logger(this.usersRepository.name);
 
-  async createUser(dto: CreateUserDto) {
+  async createUser() {}
+
+  async createUserByTelegram(dto: CreateUserByTelegramDto) {
     this.logger.log("Создание пользователя");
     try {
       const transaction = await this.sequelize.transaction();
