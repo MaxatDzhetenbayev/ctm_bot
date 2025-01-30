@@ -10,11 +10,11 @@ import {
 } from "sequelize-typescript";
 import { Role } from "./role.entity";
 import { Profile } from "./profile.entity";
-import { Center } from "src/manage/centers/entities/center.entity";
-import { UsersCenter } from "src/manage/centers/entities/users_center.entity";
-import { Service } from "src/manage/services/entities/service.entity";
-import { ManagerServices } from "src/manage/services/entities/manager-services.entity";
-import { Reception } from "src/manage/receptions/entities/reception.entity";
+import { Center } from "src/general/centers/entities/center.entity";
+import { UsersCenter } from "src/general/centers/entities/users_center.entity";
+import { Service } from "src/general/services/entities/service.entity";
+import { ManagerServices } from "src/general/services/entities/manager-services.entity";
+import { Reception } from "src/general/receptions/entities/reception.entity";
 import { ManagerTable } from "./manager-table.entity";
 
 export enum AuthType {

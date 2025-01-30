@@ -9,9 +9,9 @@ import sequelize from "sequelize";
 
 import { Center } from "../centers/entities/center.entity";
 import { Reception } from "./entities/reception.entity";
-import { User } from "src/default/users/entities/user.entity";
+import { User } from "src/general/users/entities/user.entity";
 import { Service } from "../services/entities/service.entity";
-import { Role } from "src/default/users/entities/role.entity";
+import { Role } from "src/general/users/entities/role.entity";
 
 @Injectable()
 export class ReceptionsService {

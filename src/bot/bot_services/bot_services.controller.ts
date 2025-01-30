@@ -2,8 +2,8 @@ import * as moment from "moment";
 import { BotServicesService } from "./bot_services.service";
 import { Action, Ctx, Update } from "nestjs-telegraf";
 import { Context } from "vm";
-import { ReceptionsService } from "src/manage/receptions/receptions.service";
-import { UsersService } from "src/default/users/users.service";
+import { ReceptionsService } from "src/general/receptions/receptions.service";
+import { UsersService } from "src/general/users/users.service";
 
 @Update()
 export class BotServicesController {

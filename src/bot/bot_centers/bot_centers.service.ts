@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { CentersService } from "src/manage/centers/centers.service";
+import { CentersService } from "src/general/centers/centers.service";
 import { Context } from "vm";
 
 @Injectable()

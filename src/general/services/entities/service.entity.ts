@@ -9,7 +9,7 @@ import {
   Table,
 } from "sequelize-typescript";
 import { ManagerServices } from "./manager-services.entity";
-import { User } from "src/default/users/entities/user.entity";
+import { User } from "src/general/users/entities/user.entity";
 
 @Table({
   tableName: "services",

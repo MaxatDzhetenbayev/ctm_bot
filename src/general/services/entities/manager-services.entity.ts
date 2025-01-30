@@ -1,5 +1,5 @@
 import { ForeignKey, Model, Table } from "sequelize-typescript";
-import { User } from "src/default/users/entities/user.entity";
+import { User } from "src/general/users/entities/user.entity";
 import { Service } from "./service.entity";
 
 @Table({

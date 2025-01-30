@@ -9,7 +9,7 @@ import {
   Default,
   AllowNull,
 } from "sequelize-typescript";
-import { User } from "src/default/users/entities/user.entity";
+import { User } from "src/general/users/entities/user.entity";
 import { ReceptionStatus } from "./reception_status.entity";
 
 @Table({ tableName: "receptions", timestamps: true })

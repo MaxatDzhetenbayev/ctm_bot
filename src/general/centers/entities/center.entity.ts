@@ -7,8 +7,8 @@ import {
   Table,
 } from "sequelize-typescript";
 import { UsersCenter } from "./users_center.entity";
-import { User } from "src/default/users/entities/user.entity";
-import { ManagerTable } from "src/default/users/entities/manager-table.entity";
+import { User } from "src/general/users/entities/user.entity";
+import { ManagerTable } from "src/general/users/entities/manager-table.entity";
 
 @Table({
   tableName: "centers",

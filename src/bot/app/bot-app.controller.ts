@@ -1,11 +1,11 @@
 import { Context } from "vm";
 import { Action, Ctx, On, Start, Update } from "nestjs-telegraf";
 
-import { UsersService } from "src/default/users/users.service";
+import { UsersService } from "src/general/users/users.service";
 import { BotCentersService } from "../bot_centers/bot_centers.service";
 import { BotAuthService } from "../bot_auth/bot_auth.service";
 
-import { AuthType } from "src/default/users/entities/user.entity";
+import { AuthType } from "src/general/users/entities/user.entity";
 import { RegistrationContext } from "../bot_auth/bot-auth.controller";
 
 @Update()

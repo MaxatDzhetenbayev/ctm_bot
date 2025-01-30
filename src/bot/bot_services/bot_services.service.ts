@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ServicesService } from "src/manage/services/services.service";
+import { ServicesService } from "src/general/services/services.service";
 import { Context } from "vm";
 import * as moment from "moment";
 

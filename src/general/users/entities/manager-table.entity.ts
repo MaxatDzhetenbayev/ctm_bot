@@ -1,7 +1,7 @@
 import { Column, ForeignKey, Model, Table } from "sequelize-typescript";
 import { DataTypes } from "sequelize";
 import { User } from "./user.entity";
-import { Center } from "src/manage/centers/entities/center.entity";
+import { Center } from "src/general/centers/entities/center.entity";
 
 @Table({
   tableName: "managers_table",
