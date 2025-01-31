@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   Injectable,
@@ -28,6 +29,10 @@ export class UsersService {
 
   async createUser(dto: CreateUserDto) {
     const transaction = await this.sequelize.transaction();
+
+    if ((dto.role = 1)) {
+      throw new BadRequestException("У вас нет прав на создание данной роли");
+    }
 
     try {
       const { login, password, role, profile, center_id, service_ids } = dto;
