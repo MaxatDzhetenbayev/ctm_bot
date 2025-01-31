@@ -105,6 +105,16 @@ export class UsersService {
     }
   }
 
+  async validateUserByLogin(login: string) {
+    const user = await this.usersRepository.findOne({
+      where: {
+        login: login,
+      },
+    });
+
+    return user;
+  }
+
   async createUserByTelegram(dto: CreateUserByTelegramDto) {
     this.logger.log("Создание пользователя");
     try {
