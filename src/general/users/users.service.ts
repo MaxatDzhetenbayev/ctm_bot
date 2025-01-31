@@ -1,13 +1,17 @@
 import {
+  ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common";
-import { User } from "./entities/user.entity";
+import { AuthType, User } from "./entities/user.entity";
 import { Profile } from "./entities/profile.entity";
 import { InjectModel } from "@nestjs/sequelize";
 import { Sequelize } from "sequelize-typescript";
-import { CreateUserByTelegramDto } from "./dto/create-user.dto";
+import { CreateUserByTelegramDto } from "./dto/create-user-by-telegram.dto";
+import { Center } from "../centers/entities/center.entity";
+import { CreateUserDto } from "./dto/create-user.dto";
 
 @Injectable()
 export class UsersService {
@@ -21,7 +25,85 @@ export class UsersService {
 
   private readonly logger = new Logger(this.usersRepository.name);
 
-  async createUser() {}
+  async createUser(dto: CreateUserDto) {
+    const transaction = await this.sequelize.transaction();
+
+    try {
+      const { login, password, role, profile, center_id, service_ids } = dto;
+
+      const findUserInCenter = await this.usersRepository.findOne({
+        where: {
+          login,
+        },
+        include: [
+          {
+            model: Center,
+            where: {
+              id: center_id,
+            },
+            attributes: [],
+            through: { attributes: [] },
+          },
+        ],
+      });
+
+      if (findUserInCenter) {
+        throw new ConflictException(
+          "Пользователь с таким логином уже существует в данном центре"
+        );
+      }
+
+      const user = await this.usersRepository.create(
+        {
+          login,
+          password_hash: password,
+          role_id: role,
+          auth_type: AuthType.default,
+        },
+        {
+          transaction,
+        }
+      );
+
+      if (!user) {
+        throw new InternalServerErrorException(
+          "Ошибка при создании пользователя"
+        );
+      }
+
+      const userProfile = await user.$create("profile", profile, {
+        transaction,
+      });
+
+      if (!userProfile) {
+        throw new InternalServerErrorException(
+          "Ошибка при создании профиля пользователя"
+        );
+      }
+
+      await user.$add("centers", center_id, { transaction });
+
+      if (service_ids) {
+        await user.$add("services", service_ids, { transaction });
+      }
+
+      await transaction.commit();
+
+      const { password_hash, ...user_data } = user.toJSON();
+
+      return user_data;
+    } catch (error) {
+      await transaction.rollback();
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        "Ошибка при создании пользователя"
+      );
+    }
+  }
 
   async createUserByTelegram(dto: CreateUserByTelegramDto) {
     this.logger.log("Создание пользователя");
