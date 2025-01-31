@@ -33,7 +33,7 @@ export class AuthService {
     const payload = {
       id: user.id,
       login: user.login,
-      role: user.role,
+      role: user.role.name,
     };
 
     const result: { token: string } = {

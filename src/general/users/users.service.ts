@@ -12,6 +12,7 @@ import { Sequelize } from "sequelize-typescript";
 import { CreateUserByTelegramDto } from "./dto/create-user-by-telegram.dto";
 import { Center } from "../centers/entities/center.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
+import { Role } from "./entities/role.entity";
 
 @Injectable()
 export class UsersService {
@@ -110,6 +111,13 @@ export class UsersService {
       where: {
         login: login,
       },
+      include: [
+        {
+          model: Role,
+          attributes: ["name"],
+        },
+      ],
+      plain: true,
     });
 
     return user;
