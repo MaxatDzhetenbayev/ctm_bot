@@ -101,7 +101,7 @@ export class BotServicesController {
   async onAppointmentConfirm(ctx: Context) {
    //  ctx.deleteMessage();
 
-    const user = await this.userService.validateUser(ctx.from.id.toString());
+    const user = await this.userService.validateUserByTelegram(ctx.from.id.toString());
 
     if (!user) {
       await ctx.reply(

@@ -37,7 +37,7 @@ export class BotAppController {
     ctx.session.language = language;
 
     const chatId = String(ctx.chat?.id);
-    const user = await this.userService.validateUser(chatId);
+    const user = await this.userService.validateUserByTelegram(chatId);
 
     if (!user) {
       await this.botAuthService.promptRegistration(ctx, language);

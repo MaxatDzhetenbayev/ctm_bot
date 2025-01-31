@@ -158,7 +158,7 @@ export class UsersService {
     }
   }
 
-  async validateUser(telegram_id: string) {
+  async validateUserByTelegram(telegram_id: string) {
     this.logger.log("Проверка пользователя");
     const user = await this.usersRepository.findOne({
       where: {
