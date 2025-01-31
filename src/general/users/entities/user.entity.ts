@@ -1,4 +1,6 @@
 import {
+  BeforeCreate,
+  BeforeUpdate,
   BelongsTo,
   BelongsToMany,
   Column,
@@ -8,6 +10,9 @@ import {
   Model,
   Table,
 } from "sequelize-typescript";
+
+import * as bcrypt from "bcrypt";
+
 import { Role } from "./role.entity";
 import { Profile } from "./profile.entity";
 import { Center } from "src/general/centers/entities/center.entity";
@@ -68,4 +73,13 @@ export class User extends Model<User> {
     as: "manager_works",
   })
   manager_works!: Reception[];
+
+  @BeforeCreate
+  @BeforeUpdate
+  static async hashPassword(instance: User) {
+    if (instance.changed("password_hash")) {
+      const salt = await bcrypt.genSalt(10);
+      instance.password_hash = await bcrypt.hash(instance.password_hash, salt);
+    }
+  }
 }
