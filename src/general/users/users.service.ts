@@ -5,6 +5,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from "@nestjs/common";
 import { AuthType, User } from "./entities/user.entity";
 import { Profile } from "./entities/profile.entity";
@@ -107,6 +108,42 @@ export class UsersService {
 
       throw new InternalServerErrorException(
         "Ошибка при создании пользователя"
+      );
+    }
+  }
+
+  async getProfileUser({ login }: { login: string }) {
+    try {
+      const user = await this.validateUserByLogin(login);
+      if (!user) {
+        throw new NotFoundException("Пользователь не найден");
+      }
+
+      const profile = await this.profilesRepository.findOne({
+        where: {
+          id: user.id,
+        },
+      });
+
+      if (!profile) {
+        throw new NotFoundException("Профиль пользователя не найден");
+      }
+
+      const { login: userLogin, role } = user;
+      const { full_name } = profile;
+
+      return {
+        userLogin,
+        role: role.name,
+        full_name,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        "Ошибка при получении профиля пользователя"
       );
     }
   }

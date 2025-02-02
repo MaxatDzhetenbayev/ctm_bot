@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -23,5 +24,13 @@ export class UsersController {
   @Post()
   async create(@Body() body: CreateUserDto) {
     return this.usersService.createUser(body);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @Get("profile")
+  async getProfile(@Req() req) {
+    return this.usersService.getProfileUser({
+      login: req.user.login,
+    });
   }
 }
