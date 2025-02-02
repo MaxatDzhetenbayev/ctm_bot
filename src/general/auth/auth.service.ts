@@ -19,6 +19,12 @@ export class AuthService {
     try {
       const user = await this.validateUser(userDto);
 
+      if (!user) {
+        throw new UnauthorizedException({
+          message: "Некорректный email или пароль",
+        });
+      }
+
       const { token: access_token } = await this.generateToken(user);
 
       return { token: access_token };
