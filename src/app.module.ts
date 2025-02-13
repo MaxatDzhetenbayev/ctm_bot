@@ -12,6 +12,7 @@ import { ReceptionsModule } from "./general/receptions/receptions.module";
 import { NotificationsModule } from "./general/notifications/notifications.module";
 import { AuthMiddleware } from "./general/auth/auth.middleware";
 import { JwtConfigModule } from "./config/jwt-config.module";
+import { StatusModule } from './status/status.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { JwtConfigModule } from "./config/jwt-config.module";
     ReceptionsModule,
     NotificationsModule,
     JwtConfigModule,
+    StatusModule,
   ],
 })
 export class AppModule {
