@@ -2,6 +2,7 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Sequelize } from "sequelize-typescript";
@@ -12,6 +13,8 @@ import { Reception } from "./entities/reception.entity";
 import { User } from "src/general/users/entities/user.entity";
 import { Service } from "../services/entities/service.entity";
 import { Role } from "src/general/users/entities/role.entity";
+import { Profile } from "../users/entities/profile.entity";
+import { Status } from "src/status/entities/status.entity";
 
 @Injectable()
 export class ReceptionsService {
@@ -39,6 +42,72 @@ export class ReceptionsService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException("Ошибка при создании приема");
+    }
+  }
+
+  async findAll(id: number) {
+    try {
+      const receptions = await this.receptionRepository.findAll({
+        where: {
+          manager_id: id,
+        },
+        attributes: ["id", "date", "time", "rating"],
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id"],
+            required: true,
+            include: [
+              {
+                model: Profile,
+                attributes: ["iin", "full_name", "phone"],
+              },
+            ],
+          },
+          {
+            model: Status,
+            attributes: ["name"],
+          },
+        ],
+      });
+
+      return receptions;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        "Ошибка при получении списка приемов"
+      );
+    }
+  }
+
+  async changeReceptionStatus(receptionId: number, statusId: number) {
+    this.logger.log(`Принятие приема ${receptionId}`);
+    const now = new Date();
+    try {
+      const reception = await this.receptionRepository.findOne({
+        where: {
+          id: receptionId,
+        },
+      });
+      if (!reception) {
+        throw new NotFoundException("Прием не найден");
+      }
+
+      reception.status_id = statusId;
+      await reception.save();
+
+      this.logger.log(`Прием ${receptionId} принят`);
+      return reception;
+    } catch (error) {
+      this.logger.error(`Ошибка при изменении статуса приема: ${error}`);
+
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException(
+        "Ошибка при изменении статуса приема"
+      );
     }
   }
 
@@ -141,7 +210,6 @@ export class ReceptionsService {
     time: string;
   }) {
     const { date, time, center_id, service_id, user_id } = body;
-    const transaction = await this.sequelize.transaction();
 
     try {
       const managers = await this.userRepository.findAll({
