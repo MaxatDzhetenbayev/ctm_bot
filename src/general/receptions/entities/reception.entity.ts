@@ -1,4 +1,3 @@
-import { allow } from "joi";
 import {
   Table,
   Column,
@@ -7,10 +6,9 @@ import {
   ForeignKey,
   BelongsTo,
   Default,
-  AllowNull,
 } from "sequelize-typescript";
 import { User } from "src/general/users/entities/user.entity";
-import { ReceptionStatus } from "./reception_status.entity";
+import { Status } from "src/status/entities/status.entity";
 
 @Table({ tableName: "receptions", timestamps: true })
 export class Reception extends Model {
@@ -47,7 +45,7 @@ export class Reception extends Model {
   })
   time: string;
 
-  @ForeignKey(() => ReceptionStatus)
+  @ForeignKey(() => Status)
   @Column({
     type: DataType.INTEGER,
     allowNull: false,
@@ -74,8 +72,8 @@ export class Reception extends Model {
   })
   updatedAt: Date;
 
-  @BelongsTo(() => ReceptionStatus)
-  status: ReceptionStatus;
+  @BelongsTo(() => Status)
+  status: Status;
 
   @BelongsTo(() => User, "user_id")
   user: User;
