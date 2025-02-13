@@ -11,10 +11,10 @@ import { User } from "src/general/users/entities/user.entity";
 import { Center } from "src/general/centers/entities/center.entity";
 import { UsersCenter } from "src/general/centers/entities/users_center.entity";
 import { Reception } from "src/general/receptions/entities/reception.entity";
-import { ReceptionStatus } from "src/general/receptions/entities/reception_status.entity";
 import { ManagerServices } from "src/general/services/entities/manager-services.entity";
 import { Service } from "src/general/services/entities/service.entity";
 import * as LocalSession from "telegraf-session-local";
+import { Status } from "src/status/entities/status.entity";
 
 const sessions = new LocalSession({ database: "session_db.json" });
 
@@ -50,8 +50,8 @@ const sessions = new LocalSession({ database: "session_db.json" });
           Service,
           ManagerServices,
           Reception,
-          ReceptionStatus,
           ManagerTable,
+          Status,
         ],
       }),
     }),
