@@ -24,7 +24,7 @@ export class AuthController {
       res.cookie('access_token', token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'none'
+        sameSite: 'strict'
       })
       return { status: 200, message: 'Вы успешно авторизованы' }
     } catch (error) {

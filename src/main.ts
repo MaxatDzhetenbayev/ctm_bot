@@ -17,6 +17,7 @@ async function bootstrap() {
   })
   app.set('trust proxy', true)
   await app.listen(config.getOrThrow<number>('PORT'))
+  app.setGlobalPrefix('/api')
 }
 
 bootstrap()
