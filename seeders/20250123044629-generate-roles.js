@@ -16,9 +16,6 @@ module.exports = {
       {
         name: "admin",
       },
-      {
-        name: "superadmin",
-      },
     ]);
   },
 
