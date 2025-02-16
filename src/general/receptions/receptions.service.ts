@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException, Logger, NotFoundException } f
 import { InjectModel } from '@nestjs/sequelize'
 import { Sequelize } from 'sequelize-typescript'
 import sequelize from 'sequelize'
+import * as moment from 'moment'
 
 import { Center } from '../centers/entities/center.entity'
 import { Reception } from './entities/reception.entity'
@@ -45,6 +46,7 @@ export class ReceptionsService {
     try {
       const receptions = await this.receptionRepository.findAll({
         where: {
+          date: moment(),
           manager_id: id
         },
         attributes: ['id', 'date', 'time', 'rating'],
@@ -68,7 +70,7 @@ export class ReceptionsService {
         ],
         order: [['time', 'ASC']]
       })
-
+      console.log(receptions)
       return receptions
     } catch (error) {
       throw new InternalServerErrorException(

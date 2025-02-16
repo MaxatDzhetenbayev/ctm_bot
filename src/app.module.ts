@@ -13,6 +13,7 @@ import { NotificationsModule } from "./general/notifications/notifications.modul
 import { AuthMiddleware } from "./general/auth/auth.middleware";
 import { JwtConfigModule } from "./config/jwt-config.module";
 import { StatusModule } from './status/status.module';
+import { KpiModule } from './general/kpi/kpi.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { StatusModule } from './status/status.module';
     NotificationsModule,
     JwtConfigModule,
     StatusModule,
+    KpiModule,
   ],
 })
 export class AppModule {

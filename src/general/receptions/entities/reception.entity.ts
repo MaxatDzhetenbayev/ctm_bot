@@ -1,94 +1,86 @@
-import {
-  Table,
-  Column,
-  Model,
-  DataType,
-  ForeignKey,
-  BelongsTo,
-  Default,
-} from "sequelize-typescript";
-import { User } from "src/general/users/entities/user.entity";
-import { Status } from "src/status/entities/status.entity";
-import { Service } from "src/general/services/entities/service.entity";
+import { BelongsTo, Column, DataType, Default, ForeignKey, Model, Table } from 'sequelize-typescript'
+import { User } from 'src/general/users/entities/user.entity'
+import { Status } from 'src/status/entities/status.entity'
+import { Service } from 'src/general/services/entities/service.entity'
 
-@Table({ tableName: "receptions", timestamps: true })
+@Table({ tableName: 'receptions', timestamps: true })
 export class Reception extends Model {
   @Column({
     type: DataType.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
+    primaryKey: true
   })
-  id: number;
+  id: number
 
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  user_id: number;
+  user_id: number
 
   @ForeignKey(() => User)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  manager_id: number;
+  manager_id: number
 
   @Column({
-    type: DataType.DATE,
-    allowNull: false,
+    type: DataType.DATEONLY,
+    allowNull: false
   })
-  date: Date;
+  date: Date
 
   @Column({
     type: DataType.TIME,
-    allowNull: false,
+    allowNull: false
   })
-  time: string;
+  time: string
 
   @ForeignKey(() => Status)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  status_id: number;
+  status_id: number
 
   @ForeignKey(() => Service)
   @Column({
     type: DataType.INTEGER,
-    allowNull: false,
+    allowNull: false
   })
-  service_id: number;
+  service_id: number
 
   @Column({
     type: DataType.INTEGER,
-    allowNull: true,
+    allowNull: true
   })
-  rating?: number;
+  rating?: number
 
   @Default(DataType.NOW)
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
-  createdAt: Date;
+  createdAt: Date
 
   @Default(DataType.NOW)
   @Column({
     type: DataType.DATE,
-    allowNull: false,
+    allowNull: false
   })
-  updatedAt: Date;
+  updatedAt: Date
 
   @BelongsTo(() => Status)
-  status: Status;
+  status: Status
 
-  @BelongsTo(() => User, "user_id")
-  user: User;
+  @BelongsTo(() => User, 'user_id')
+  user: User
 
-  @BelongsTo(() => User, "manager_id")
-  manager: User;
+  @BelongsTo(() => User, 'manager_id')
+  manager: User
 
   @BelongsTo(() => Service)
-  service: Service;
+  service: Service
 }
