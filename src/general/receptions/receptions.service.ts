@@ -65,7 +65,8 @@ export class ReceptionsService {
             model: Status,
             attributes: ['name']
           }
-        ]
+        ],
+        order: [['time', 'ASC']]
       })
 
       return receptions
