@@ -22,6 +22,8 @@ export class AuthController {
     try {
       const { token } = await this.authService.login(loginDto)
       res.cookie('access_token', token, {
+        path: '/',
+        domain: 'cp.abai-ctm.kz',
         httpOnly: true,
         secure: true,
         sameSite: 'none'
