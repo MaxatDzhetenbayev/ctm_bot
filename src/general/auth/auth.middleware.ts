@@ -1,6 +1,6 @@
-import { Injectable, NestMiddleware } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { Request, Response, NextFunction } from "express";
+import { Injectable, NestMiddleware } from '@nestjs/common'
+import { JwtService } from '@nestjs/jwt'
+import { NextFunction, Request, Response } from 'express'
 
 interface CustomRequest extends Request {
   user?: any;
@@ -8,23 +8,24 @@ interface CustomRequest extends Request {
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService) {
+  }
 
   use(req: CustomRequest, res: Response, next: NextFunction) {
-    const token = req.cookies["access_token"];
+    const token = req.cookies['access_token']
     if (!token) {
-      return res.status(401).send({ message: "Вы не авторизованы" });
+      return res.status(401).send({ message: 'Вы не авторизованы' })
     }
     try {
-      const decoded = this.jwtService.verify(token, { secret: "secret" });
-      req.user = decoded;
-      // console.log("Token decoded successfully", decoded);
-      next();
+      const decoded = this.jwtService.verify(token, { secret: 'secret' })
+      req.user = decoded
+      // console.log('Token decoded successfully', decoded)
+      next()
     } catch (err) {
-      // console.log("Token verification failed", err.message);
+      // console.log('Token verification failed', err.message)
       return res.status(401).send({
-        message: "Вы не авторизованы",
-      });
+        message: 'Вы не авторизованы'
+      })
     }
   }
 }
