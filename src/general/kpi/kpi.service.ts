@@ -8,8 +8,7 @@ export class KpiService {
   constructor(
     @InjectModel(Reception)
     private readonly receptionRepository: typeof Reception
-  ) {
-  }
+  ) {}
 
   private getLastWeekdays(startDate: moment.Moment): moment.Moment[] {
     const weekdays = []
@@ -47,5 +46,33 @@ export class KpiService {
     })
 
     return counts
+  }
+
+  async getReceptionStatsPerWeekday(managerId: number): Promise<{
+    total: number;
+    completed: number;
+    declined: number;
+  }> {
+    const today = moment()
+    const lastFiveWeekdays = this.getLastWeekdays(today)
+
+    const dates = lastFiveWeekdays.map((day) => day.format('YYYY-MM-DD'))
+
+    const receptions = await this.receptionRepository.findAll({
+      where: {
+        manager_id: managerId,
+        date: dates
+      }
+    })
+
+    const total = receptions.length
+    const completed = receptions.filter((reception) => reception.status_id === 4).length
+    const declined = receptions.filter((reception) => reception.status_id === 5).length
+
+    return {
+      total,
+      completed,
+      declined
+    }
   }
 }
