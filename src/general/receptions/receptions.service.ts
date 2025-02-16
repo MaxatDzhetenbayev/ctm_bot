@@ -83,7 +83,7 @@ export class ReceptionsService {
   async findOne(id: number) {
     try {
       this.logger.log(`Получение приема ${id}`);
-      const receptions = await this.receptionRepository.findOne({
+      const reception = await this.receptionRepository.findOne({
         where: {
           id,
         },
@@ -105,21 +105,25 @@ export class ReceptionsService {
             model: Status,
             attributes: ["name"],
           },
+          {
+            model: Service,
+            attributes: ["id", "name", "description"],
+          },
         ],
       });
 
-      if (!receptions) {
+      if (!reception) {
         throw new NotFoundException("Прием не найден");
       }
 
-      return receptions;
+      return reception;
     } catch (error) {
       this.logger.error(`Ошибка при получении приема: ${error}`);
       if (error instanceof NotFoundException) {
         throw error;
       }
 
-      throw new InternalServerErrorException("Ошибка при получении приемf");
+      throw new InternalServerErrorException("Ошибка при получении приема");
     }
   }
 

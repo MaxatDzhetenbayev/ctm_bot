@@ -9,6 +9,7 @@ import {
 } from "sequelize-typescript";
 import { User } from "src/general/users/entities/user.entity";
 import { Status } from "src/status/entities/status.entity";
+import { Service } from "src/general/services/entities/service.entity";
 
 @Table({ tableName: "receptions", timestamps: true })
 export class Reception extends Model {
@@ -52,6 +53,13 @@ export class Reception extends Model {
   })
   status_id: number;
 
+  @ForeignKey(() => Service)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  service_id: number;
+
   @Column({
     type: DataType.INTEGER,
     allowNull: true,
@@ -80,4 +88,7 @@ export class Reception extends Model {
 
   @BelongsTo(() => User, "manager_id")
   manager: User;
+
+  @BelongsTo(() => Service)
+  service: Service;
 }
