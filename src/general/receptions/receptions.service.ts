@@ -157,34 +157,26 @@ export class ReceptionsService {
   async findFreeTimeSlots(centerId: number, serviceId: number, date: string) {
     try {
       // временных слоты с 9:00 до 18:00 включительно
-      const availableSlots = [];
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
-
-      const isPastSlot = (hour, minute) => {
-        if (hour < currentHour) return true;
-        if (hour === currentHour && minute <= currentMinute) return true;
-        return false;
-      };
-
-      for (let hour = 9; hour <= 18; hour++) {
-        for (let minute = 0; minute < 60; minute += 30) {
-          const time = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
-
-          // убираем время с 13:00 до 14:30, 18:30 и уже прошедшие слоты
-          if (
-            (hour === 13 && minute >= 0) ||
-            (hour === 14 && minute <= 30) ||
-            (hour === 18 && minute === 30) ||
-            isPastSlot(hour, minute)
-          ) {
-            continue;
-          }
-
-          availableSlots.push(time);
-        }
-      }
+      const availableSlots = [
+        "09:00",
+        "09:30",
+        "10:00",
+        "10:30",
+        "11:00",
+        "11:30",
+        "12:00",
+        "12:30",
+        "14:00",
+        "14:30",
+        "15:00",
+        "15:30",
+        "16:00",
+        "16:30",
+        "17:00",
+        "17:30",
+        "18:00",
+        "18:30",
+      ];
 
       const managers = await this.userRepository.findAll({
         include: [
