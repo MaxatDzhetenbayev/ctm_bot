@@ -9,7 +9,7 @@ import { JwtStrategy } from '../general/auth/jwt.strategy'
     JwtModule.registerAsync({
       useFactory: async () => ({
         secret: process.env.JWT_SECRET || 'secret',
-        signOptions: { expiresIn: '1h' }
+        signOptions: { expiresIn: '7d' }
       })
     })
   ],
