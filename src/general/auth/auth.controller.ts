@@ -26,7 +26,7 @@ export class AuthController {
         domain: domain,
         httpOnly: true,
         secure: true,
-        sameSite: 'restrict'
+        sameSite: 'lax'
       })
       return { status: 200, message: 'Вы успешно авторизованы' }
     } catch (error) {
