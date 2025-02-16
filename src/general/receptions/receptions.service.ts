@@ -80,6 +80,49 @@ export class ReceptionsService {
     }
   }
 
+  async findOne(id: number) {
+    try {
+      this.logger.log(`Получение приема ${id}`);
+      const receptions = await this.receptionRepository.findOne({
+        where: {
+          id,
+        },
+        attributes: ["id", "date", "time", "rating"],
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id"],
+            required: true,
+            include: [
+              {
+                model: Profile,
+                attributes: ["iin", "full_name", "phone"],
+              },
+            ],
+          },
+          {
+            model: Status,
+            attributes: ["name"],
+          },
+        ],
+      });
+
+      if (!receptions) {
+        throw new NotFoundException("Прием не найден");
+      }
+
+      return receptions;
+    } catch (error) {
+      this.logger.error(`Ошибка при получении приема: ${error}`);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
+      throw new InternalServerErrorException("Ошибка при получении приемf");
+    }
+  }
+
   async changeReceptionStatus(receptionId: number, statusId: number) {
     this.logger.log(`Принятие приема ${receptionId}`);
     const now = new Date();

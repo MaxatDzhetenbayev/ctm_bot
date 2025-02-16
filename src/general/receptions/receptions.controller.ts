@@ -65,6 +65,13 @@ export class ReceptionsController {
 
   @UseGuards(RolesGuard)
   @Roles(RoleType.manager)
+  @Get(":id")
+  findOne(@Param("id") id: string) {
+    return this.receptionsService.findOne(+id);
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.manager)
   @Patch(":id/status")
   changeStatus(@Query("status") status: number, @Param("id") id: number) {
     return this.receptionsService.changeReceptionStatus(id, status);
