@@ -56,7 +56,7 @@ export class ReceptionsController {
   @Roles(RoleType.manager)
   @Get()
   findAll(@Req() req) {
-    console.log(req.user);
+    // console.log(req.user);
 
     const id = req.user.id;
 

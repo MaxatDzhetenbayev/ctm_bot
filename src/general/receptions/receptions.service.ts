@@ -1,4 +1,9 @@
-import { Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common'
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException
+} from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { Sequelize } from 'sequelize-typescript'
 import sequelize from 'sequelize'
@@ -20,17 +25,16 @@ export class ReceptionsService {
     @InjectModel(User)
     private userRepository: typeof User,
     private readonly sequelize: Sequelize
-  ) {
-  }
+  ) {}
 
   logger = new Logger(ReceptionsService.name)
 
   async create(body: {
-    user_id: number;
-    manager_id: number;
-    date: string;
-    time: string;
-    status_id: number;
+    user_id: number
+    manager_id: number
+    date: string
+    time: string
+    status_id: number
   }) {
     try {
       const reception = await this.receptionRepository.create(body)
@@ -70,7 +74,7 @@ export class ReceptionsService {
         ],
         order: [['time', 'ASC']]
       })
-      console.log(receptions)
+      // console.log(receptions)
       return receptions
     } catch (error) {
       throw new InternalServerErrorException(
@@ -206,19 +210,17 @@ export class ReceptionsService {
         ]
       })
 
-      const freeSlotsPerManager = managers.map((manager) => {
+      const freeSlotsPerManager = managers.map(manager => {
         const bookedSlots = new Set()
         if (manager.manager_works) {
-          manager.manager_works.forEach((reception) => {
+          manager.manager_works.forEach(reception => {
             const bookedTime = reception.time.substring(0, 5)
             bookedSlots.add(bookedTime)
           })
         }
 
         // Список свободных слотов для текущего менеджера
-        const freeSlots = availableSlots.filter(
-          (slot) => !bookedSlots.has(slot)
-        )
+        const freeSlots = availableSlots.filter(slot => !bookedSlots.has(slot))
 
         return {
           managerId: manager.id,
@@ -228,7 +230,7 @@ export class ReceptionsService {
 
       const globalFreeSlots = new Set()
       freeSlotsPerManager.forEach(({ freeSlots }) => {
-        freeSlots.forEach((slot) => globalFreeSlots.add(slot))
+        freeSlots.forEach(slot => globalFreeSlots.add(slot))
       })
 
       return Array.from(globalFreeSlots).sort()
@@ -241,11 +243,11 @@ export class ReceptionsService {
   }
 
   async choiceManager(body: {
-    center_id: number;
-    service_id: number;
-    user_id: number;
-    date: string;
-    time: string;
+    center_id: number
+    service_id: number
+    user_id: number
+    date: string
+    time: string
   }) {
     const { date, time, center_id, service_id, user_id } = body
 
@@ -282,7 +284,7 @@ export class ReceptionsService {
         where: sequelize.literal('manager_works.id IS NULL')
       })
 
-      const managersIds = managers.map((manager) => manager.id)
+      const managersIds = managers.map(manager => manager.id)
 
       const leastBusyManagersAsc = await this.userRepository.findAll({
         attributes: {
