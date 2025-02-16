@@ -339,6 +339,7 @@ export class ReceptionsService {
       const reception = await this.receptionRepository.create({
         user_id,
         manager_id: leastBusyManager.id,
+        service_id: service_id,
         status_id: 2,
         date,
         time,
