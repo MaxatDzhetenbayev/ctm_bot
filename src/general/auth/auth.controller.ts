@@ -13,18 +13,20 @@ import { LoginDto } from './dto/login.dto'
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {
-  }
+  constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('/login')
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res) {
+    const domain = process.env.COOKIE_DOMAIN || 'localhost'
     try {
       const { token } = await this.authService.login(loginDto)
       res.cookie('access_token', token, {
+        path: '/',
+        domain: domain,
         httpOnly: true,
         secure: true,
-        sameSite: 'strict'
+        sameSite: 'lax'
       })
       return { status: 200, message: 'Вы успешно авторизованы' }
     } catch (error) {

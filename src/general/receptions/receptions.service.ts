@@ -74,7 +74,7 @@ export class ReceptionsService {
         ],
         order: [['time', 'ASC']]
       })
-      console.log(receptions)
+      // console.log(receptions)
       return receptions
     } catch (error) {
       throw new InternalServerErrorException(
