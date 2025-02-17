@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common'
-import { KpiService } from './kpi.service'
-import { KpiController } from './kpi.controller'
 import { SequelizeModule } from '@nestjs/sequelize'
-import { Reception } from '../receptions/entities/reception.entity'
-import { User } from '../users/entities/user.entity'
-import { Center } from '../centers/entities/center.entity'
-import { Role } from '../users/entities/role.entity'
-import { Service } from '../services/entities/service.entity'
 import { Status } from '../../status/entities/status.entity'
+import { Center } from '../centers/entities/center.entity'
+import { Reception } from '../receptions/entities/reception.entity'
+import { Service } from '../services/entities/service.entity'
+import { ManagerTable } from '../users/entities/manager-table.entity'
+import { Role } from '../users/entities/role.entity'
+import { User } from '../users/entities/user.entity'
+import { KpiController } from './kpi.controller'
+import { KpiService } from './kpi.service'
 
 @Module({
   imports: [
@@ -17,11 +18,11 @@ import { Status } from '../../status/entities/status.entity'
       Center,
       Role,
       Service,
-      Status
+      Status,
+      ManagerTable
     ])
   ],
   controllers: [KpiController],
   providers: [KpiService]
 })
-export class KpiModule {
-}
+export class KpiModule {}

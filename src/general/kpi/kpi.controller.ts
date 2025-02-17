@@ -1,24 +1,24 @@
 import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common'
-import { KpiService } from './kpi.service'
-import { RolesGuard } from '../auth/guards/roles.guard'
-import { Roles } from '../auth/guards/roles.decorator'
-import { RoleType } from '../users/entities/role.entity'
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Request } from 'express'
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
+import { Roles } from '../auth/guards/roles.decorator'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { RoleType } from '../users/entities/role.entity'
+import { KpiService } from './kpi.service'
 
 interface RequestWithUser extends Request {
   user: {
-    id: number;
-    login: string;
-    role: string;
-  };
+    id: number
+    login: string
+    role: string
+  }
 }
 
 @Controller('kpi')
 export class KpiController {
-  constructor(private readonly kpiService: KpiService) {
-  }
+  constructor(private readonly kpiService: KpiService) {}
 
+  // Количество завершенных приемов за неделю (пн-пт).
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.manager)
   @Get('weekday/completed')
@@ -27,93 +27,80 @@ export class KpiController {
     return this.kpiService.getReceptionsPerWeekday(managerId)
   }
 
+  // Количество завершенных приемов за неделю (пн-пт) по ID
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.admin)
+  @Get(':id/weekday/completed')
+  async findLastWeekdayById(@Param('id') id: number): Promise<number[]> {
+    return this.kpiService.getReceptionsPerWeekday(id)
+  }
+
+  // Количество завершенных приемов за неделю (пн-пт) по ID центра
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(RoleType.admin)
+  @Get('center/:centerId/weekday/completed')
+  async findLastWeekdayByCenter(
+    @Param('centerId') centerId: number
+  ): Promise<Record<number, number[]>> {
+    return this.kpiService.getReceptionsPerWeekdayByAllManagers(centerId)
+  }
+
+  // Количество общих, завершенных и отказных приемов за неделю (пн-пт) авторизованного пользователя
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.manager)
   @Get('weekday/stats')
   async getStats(@Req() req: RequestWithUser): Promise<{
-    total: number;
-    completed: number;
-    declined: number;
+    total: number
+    completed: number
+    declined: number
   }> {
     const managerId = req.user.id
     return this.kpiService.getReceptionStatsPerWeekday(managerId)
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.manager)
-  @Get('today/summary')
-  async getSummary(@Req() req: RequestWithUser): Promise<{
-    totalReceptions: number;
-    problematicRate: number;
-    averageRating: number;
-    managerLoad: number;
-  }> {
-    const managerId = req.user.id
-
-    const [
-      totalReceptions,
-      problematicRate,
-      averageRating,
-      managerLoad
-    ] = await Promise.all([
-      this.kpiService.getTotalReceptionsToday(managerId),
-      this.kpiService.getProblematicReceptionsRate(managerId),
-      this.kpiService.getAverageClientRating(managerId),
-      this.kpiService.getManagerLoadToday(managerId)
-    ])
-
-    return {
-      totalReceptions,
-      problematicRate,
-      averageRating,
-      managerLoad
-    }
-  }
-
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.admin)
-  @Get(':id/weekday/completed')
-  async findLastWeekdayById(
-    @Param('id') id: number
-  ): Promise<number[]> {
-    return this.kpiService.getReceptionsPerWeekday(id)
-  }
-
+  // Количество общих, завершенных и отказных приемов за неделю (пн-пт) по ID
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.admin)
   @Get(':id/weekday/stats')
-  async getStatsById(
-    @Param('id') id: number
-  ): Promise<{
-    total: number;
-    completed: number;
-    declined: number;
+  async getStatsById(@Param('id') id: number): Promise<{
+    total: number
+    completed: number
+    declined: number
   }> {
     return this.kpiService.getReceptionStatsPerWeekday(id)
   }
 
+  // Количество общих, завершенных и отказных приемов за неделю (пн-пт) по ID центра
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.admin)
-  @Get(':id/today/summary')
-  async getSummaryById(
-    @Param('id') id: number
-  ): Promise<{
-    totalReceptions: number;
-    problematicRate: number;
-    averageRating: number;
-    managerLoad: number;
+  // @Roles(RoleType.admin)
+  @Get('center/:centerId/weekday/stats')
+  async getStatsByCenter(
+    @Param('centerId') centerId: number
+  ): Promise<
+    Record<number, { total: number[]; completed: number[]; declined: number[] }>
+  > {
+    return this.kpiService.getReceptionStatsPerWeekdayByAllManagers(centerId)
+  }
+
+  // Метрики за день авторизованного пользователя
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.manager)
+  @Get('today/summary')
+  async getSummary(@Req() req: RequestWithUser): Promise<{
+    totalReceptions: number
+    problematicRate: number
+    averageRating: number
+    managerLoad: number
   }> {
-    const [
-      totalReceptions,
-      problematicRate,
-      averageRating,
-      managerLoad
-    ] = await Promise.all([
-      this.kpiService.getTotalReceptionsToday(id),
-      this.kpiService.getProblematicReceptionsRate(id),
-      this.kpiService.getAverageClientRating(id),
-      this.kpiService.getManagerLoadToday(id)
-    ])
+    const managerId = req.user.id
+
+    const [totalReceptions, problematicRate, averageRating, managerLoad] =
+      await Promise.all([
+        this.kpiService.getTotalReceptionsToday(managerId),
+        this.kpiService.getProblematicReceptionsRate(managerId),
+        this.kpiService.getAverageClientRating(managerId),
+        this.kpiService.getManagerLoadToday(managerId)
+      ])
 
     return {
       totalReceptions,
@@ -121,6 +108,50 @@ export class KpiController {
       averageRating,
       managerLoad
     }
+  }
+
+  // Метрики за день по ID
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.admin)
+  @Get(':id/today/summary')
+  async getSummaryById(@Param('id') id: number): Promise<{
+    totalReceptions: number
+    problematicRate: number
+    averageRating: number
+    managerLoad: number
+  }> {
+    const [totalReceptions, problematicRate, averageRating, managerLoad] =
+      await Promise.all([
+        this.kpiService.getTotalReceptionsToday(id),
+        this.kpiService.getProblematicReceptionsRate(id),
+        this.kpiService.getAverageClientRating(id),
+        this.kpiService.getManagerLoadToday(id)
+      ])
+
+    return {
+      totalReceptions,
+      problematicRate,
+      averageRating,
+      managerLoad
+    }
+  }
+
+  // Метрики за день по ID центра
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  // @Roles(RoleType.admin)
+  @Get('center/:centerId/today/summary')
+  async getDailySummaryByCenter(@Param('centerId') centerId: number): Promise<
+    Record<
+      number,
+      {
+        totalReceptions: number
+        problematicRate: number
+        averageRating: number
+        managerLoad: number
+      }
+    >
+  > {
+    return this.kpiService.getDailySummaryByCenter(centerId)
   }
 
   // @UseGuards(JwtAuthGuard, RolesGuard)
