@@ -14,7 +14,7 @@ lerna-debug.log*
 .vscode
 # OS
 .DS_Store
-
+swagger-spec.json
 # Tests
 /coverage
 /.nyc_output
