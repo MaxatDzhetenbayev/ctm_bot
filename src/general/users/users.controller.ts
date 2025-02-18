@@ -9,8 +9,11 @@ import {
   Put,
   Query,
   Req,
+  Res,
   UseGuards
 } from '@nestjs/common'
+import { Response } from 'express'
+import * as path from 'path'
 import { Roles } from '../auth/guards/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -93,5 +96,11 @@ export class UsersController {
       updateData,
       req.user
     )
+  }
+
+  @Get('openapi')
+  getJsonSpec(@Res() res: Response) {
+    const filePath = path.resolve('./swagger-spec.json')
+    res.download(filePath, 'swagger-spec.json')
   }
 }
