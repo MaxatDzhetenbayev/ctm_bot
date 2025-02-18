@@ -1,6 +1,6 @@
 import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common'
 import {
-  ApiBearerAuth,
+  ApiCookieAuth,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -18,7 +18,7 @@ interface RequestWithUser extends Request {
 }
 
 @ApiTags('KPI') // Группа API в Swagger
-@ApiBearerAuth() // Добавляем поддержку Bearer Token (JWT)
+@ApiCookieAuth('access_token')
 @Controller('kpi')
 export class KpiController {
   constructor(private readonly kpiService: KpiService) {}
