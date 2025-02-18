@@ -9,14 +9,17 @@ import {
   Res
 } from '@nestjs/common'
 import { AuthService } from './auth.service'
+import { ApiAuthTags, ApiLogin, ApiLogout } from './auth.swagger'
 import { LoginDto } from './dto/login.dto'
 
+@ApiAuthTags()
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @HttpCode(HttpStatus.OK)
   @Post('/login')
+  @ApiLogin()
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) res) {
     const domain = process.env.COOKIE_DOMAIN || 'localhost'
     try {
@@ -40,6 +43,7 @@ export class AuthController {
 
   @HttpCode(HttpStatus.OK)
   @Post('/logout')
+  @ApiLogout()
   async logout(@Res({ passthrough: true }) res) {
     res.clearCookie('access_token')
     return { status: 200, message: 'Вы успешно разлогинились' }
