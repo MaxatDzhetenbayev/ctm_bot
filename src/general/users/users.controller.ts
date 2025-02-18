@@ -16,7 +16,17 @@ import { RolesGuard } from '../auth/guards/roles.guard'
 import { CreateUserDto } from './dto/create-user.dto'
 import { RoleType } from './entities/role.entity'
 import { UsersService } from './users.service'
+import {
+  ApiCreateManager,
+  ApiCreateUser,
+  ApiGetManagersByCenter,
+  ApiGetProfile,
+  ApiSearchManager,
+  ApiUpdateEmployee,
+  ApiUsersTags
+} from './users.swagger'
 
+@ApiUsersTags()
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -25,12 +35,14 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(RoleType.admin)
   @Post()
+  @ApiCreateUser()
   async create(@Body() body: CreateUserDto) {
     return this.usersService.createUser(body)
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('profile')
+  @ApiGetProfile()
   async getProfile(@Req() req) {
     return this.usersService.getProfileUser({
       login: req.user.login
@@ -42,6 +54,7 @@ export class UsersController {
   @UseGuards(RolesGuard)
   // @Roles(RoleType.admin) // Только админы могут создавать сотрудников
   @Post('manager')
+  @ApiCreateManager()
   async createEmployee(@Body() body: CreateUserDto, @Req() req) {
     return this.usersService.createManager(body, req.user)
   }
@@ -49,6 +62,7 @@ export class UsersController {
   // Получение списка менеджеров по ID центра
   @HttpCode(HttpStatus.OK)
   @Get('managers/center/:centerId')
+  @ApiGetManagersByCenter()
   async getManagers(@Req() req, @Param('centerId') centerId: number) {
     return this.usersService.getManagersByCenter(centerId)
   }
@@ -58,6 +72,7 @@ export class UsersController {
   // @Roles(RoleType.admin)
   @HttpCode(HttpStatus.OK)
   @Get('managers/search')
+  @ApiSearchManager()
   async searchManager(@Query('full_name') fullName: string, @Req() req) {
     return this.usersService.getEmployeeByFullName(fullName, req.user)
   }
@@ -67,6 +82,7 @@ export class UsersController {
   // @Roles(RoleType.admin)
   @HttpCode(HttpStatus.OK)
   @Put('managers/:id')
+  @ApiUpdateEmployee()
   async updateEmployee(
     @Param('id') employeeId: number,
     @Body() updateData: { full_name?: string; iin?: string; phone?: string },
