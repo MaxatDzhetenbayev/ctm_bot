@@ -1,42 +1,56 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-} from "@nestjs/common";
-import { CentersService } from "./centers.service";
-import { CreateCenterDto } from "./dto/create-center.dto";
-import { UpdateCenterDto } from "./dto/update-center.dto";
+  Get,
+  Param,
+  Patch,
+  Post
+} from '@nestjs/common'
+import { CentersService } from './centers.service'
+import {
+  ApiCentersTag,
+  ApiCreateCenter,
+  ApiDeleteCenter,
+  ApiFindAllCenters,
+  ApiFindOneCenter,
+  ApiUpdateCenter
+} from './centers.swagger'
+import { CreateCenterDto } from './dto/create-center.dto'
+import { UpdateCenterDto } from './dto/update-center.dto'
 
-@Controller("centers")
+@ApiCentersTag()
+@Controller('centers')
 export class CentersController {
   constructor(private readonly centersService: CentersService) {}
 
   @Post()
+  @ApiCreateCenter()
   create(@Body() createCenterDto: CreateCenterDto) {
-    return this.centersService.create(createCenterDto);
+    return this.centersService.create(createCenterDto)
   }
 
   @Get()
+  @ApiFindAllCenters()
   findAll() {
-    return this.centersService.findAll();
+    return this.centersService.findAll()
   }
 
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.centersService.findOne(+id);
+  @Get(':id')
+  @ApiFindOneCenter()
+  findOne(@Param('id') id: string) {
+    return this.centersService.findOne(+id)
   }
 
-  @Patch(":id")
-  update(@Param("id") id: string, @Body() updateCenterDto: UpdateCenterDto) {
-    return this.centersService.update(+id, updateCenterDto);
+  @Patch(':id')
+  @ApiUpdateCenter()
+  update(@Param('id') id: string, @Body() updateCenterDto: UpdateCenterDto) {
+    return this.centersService.update(+id, updateCenterDto)
   }
 
-  @Delete(":id")
-  remove(@Param("id") id: string) {
-    return this.centersService.remove(+id);
+  @Delete(':id')
+  @ApiDeleteCenter()
+  remove(@Param('id') id: string) {
+    return this.centersService.remove(+id)
   }
 }
