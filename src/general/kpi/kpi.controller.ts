@@ -18,7 +18,7 @@ import {
 } from './kpi.swagger'
 
 interface RequestWithUser extends Request {
-  user: { id: number; login: string; role: string }
+  user: { id: number; login: string; role: string; center_id: number }
 }
 
 @ApiKpiTags()
@@ -49,15 +49,15 @@ export class KpiController {
     return this.kpiService.getReceptionsPerWeekday(id)
   }
 
-  // Количество завершенных приемов за неделю (пн-пт) по ID центра
+  // Количество завершенных приемов за неделю (пн-пт) по центру админа
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get('center/total/weekday/completed')
+  @Get('center/weekday/completed')
   @ApiFindLastWeekdayByCenter()
   async findLastWeekdayByCenter(
-    @Param('centerId') centerId: number
+    @Req() req: RequestWithUser
   ): Promise<Record<number, Record<string, number>>> {
-    return this.kpiService.getReceptionsPerWeekdayByCenter(centerId)
+    return this.kpiService.getReceptionsPerWeekdayByCenter(req.user.center_id)
   }
 
   // Количество общих, завершенных и отказных приемов за неделю (пн-пт) авторизованного пользователя
@@ -72,17 +72,47 @@ export class KpiController {
     return this.kpiService.getReceptionStatsPerWeekday(managerId)
   }
 
-  // Количество общих, завершенных и отказных приемов за неделю (пн-пт) по ID центра
+  // // Количество общих, завершенных и отказных приемов за неделю (пн-пт) по ID центра, возвращает MANAGER ID: {TOTAL, COMPLETED, DECLINED}
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // // @Roles(RoleType.admin)
+  // @Get('center/weekday/stats')
+  // @ApiGetStatsByCenter()
+  // async getStatsByCenter(
+  //   @Req() req: RequestWithUser
+  // ): Promise<
+  //   Record<number, { total: number[]; completed: number[]; declined: number[] }>
+  // > {
+  //   return this.kpiService.getReceptionStatsPerWeekdayByAllManagers(
+  //     req.user.center_id
+  //   )
+  // }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.admin)
-  @Get('center/total/weekday/stats')
+  @Get('center/weekday/stats')
   @ApiGetStatsByCenter()
   async getStatsByCenter(
-    @Param('centerId') centerId: number
-  ): Promise<
-    Record<number, { total: number[]; completed: number[]; declined: number[] }>
-  > {
-    return this.kpiService.getReceptionStatsPerWeekdayByAllManagers(centerId)
+    @Req() req: RequestWithUser
+  ): Promise<{ total: number; completed: number; declined: number }> {
+    const stats =
+      await this.kpiService.getReceptionStatsPerWeekdayByAllManagers(
+        req.user.center_id
+      )
+
+    if (!stats || Object.keys(stats).length === 0) {
+      return { total: 0, completed: 0, declined: 0 }
+    }
+
+    let total = 0
+    let completed = 0
+    let declined = 0
+
+    Object.values(stats).forEach(managerStats => {
+      total += managerStats.total.reduce((sum, value) => sum + value, 0)
+      completed += managerStats.completed.reduce((sum, value) => sum + value, 0)
+      declined += managerStats.declined.reduce((sum, value) => sum + value, 0)
+    })
+
+    return { total, completed, declined }
   }
 
   // Метрики за день авторизованного пользователя
@@ -130,22 +160,70 @@ export class KpiController {
     return { totalReceptions, problematicRate, averageRating, managerLoad }
   }
 
-  // Метрики за день по ID центра
+  // Метрики за день по ID центра, возвращает статистику по центру, и по каждому менеджеру
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // // @Roles(RoleType.admin)
+  // @Get('center/today/summary')
+  // @ApiGetDailySummaryByCenter()
+  // async getDailySummaryByCenter(@Req() req: RequestWithUser): Promise<
+  //   Record<
+  //     number,
+  //     {
+  //       totalReceptions: number
+  //       problematicRate: number
+  //       averageRating: number
+  //       managerLoad: number
+  //     }
+  //   >
+  // > {
+  //   return this.kpiService.getDailySummaryByCenter(req.user.center_id)
+  // }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get('center/total/today/summary')
+  @Get('center/today/summary')
   @ApiGetDailySummaryByCenter()
-  async getDailySummaryByCenter(@Param('centerId') centerId: number): Promise<
-    Record<
-      number,
-      {
-        totalReceptions: number
-        problematicRate: number
-        averageRating: number
-        managerLoad: number
+  async getDailySummaryByCenter(@Req() req: RequestWithUser): Promise<{
+    totalReceptions: number
+    problematicRate: number
+    averageRating: number
+    managerLoad: number
+  }> {
+    const summaries = await this.kpiService.getDailySummaryByCenter(
+      req.user.center_id
+    )
+
+    if (!summaries || Object.keys(summaries).length === 0) {
+      return {
+        totalReceptions: 0,
+        problematicRate: 0,
+        averageRating: 0,
+        managerLoad: 0
       }
-    >
-  > {
-    return this.kpiService.getDailySummaryByCenter(centerId)
+    }
+
+    const totalManagers = Object.keys(summaries).length
+
+    const totalReceptions = Object.values(summaries).reduce(
+      (sum, curr) => sum + curr.totalReceptions,
+      0
+    )
+    const problematicRate =
+      Object.values(summaries).reduce(
+        (sum, curr) => sum + curr.problematicRate,
+        0
+      ) / totalManagers
+    const averageRating =
+      Object.values(summaries).reduce(
+        (sum, curr) => sum + curr.averageRating,
+        0
+      ) / totalManagers
+    const managerLoad =
+      Object.values(summaries).reduce(
+        (sum, curr) => sum + curr.managerLoad,
+        0
+      ) / totalManagers
+
+    return { totalReceptions, problematicRate, averageRating, managerLoad }
   }
 }
