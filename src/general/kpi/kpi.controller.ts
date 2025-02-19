@@ -49,15 +49,46 @@ export class KpiController {
     return this.kpiService.getReceptionsPerWeekday(id)
   }
 
-  // Количество завершенных приемов за неделю (пн-пт) по центру админа
+  // // Количество завершенных приемов за неделю (пн-пт) по центру админа
+  // @UseGuards(JwtAuthGuard, RolesGuard)
+  // // @Roles(RoleType.admin)
+  // @Get('center/weekday/completed')
+  // @ApiFindLastWeekdayByCenter()
+  // async findLastWeekdayByCenter(
+  //   @Req() req: RequestWithUser
+  // ): Promise<Record<number, Record<string, number>>> {
+  //   return this.kpiService.getReceptionsPerWeekdayByCenter(req.user.center_id)
+  // }
+
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
   @Get('center/weekday/completed')
   @ApiFindLastWeekdayByCenter()
   async findLastWeekdayByCenter(
     @Req() req: RequestWithUser
-  ): Promise<Record<number, Record<string, number>>> {
-    return this.kpiService.getReceptionsPerWeekdayByCenter(req.user.center_id)
+  ): Promise<Record<string, number>> {
+    const stats = await this.kpiService.getReceptionsPerWeekdayByCenter(
+      req.user.center_id
+    )
+
+    const firstManagerKey = Object.keys(stats)[0]
+    const weekdays = Object.keys(stats[firstManagerKey])
+
+    const aggregatedStats: Record<string, number> = weekdays.reduce(
+      (acc, day) => {
+        acc[day] = 0
+        return acc
+      },
+      {} as Record<string, number>
+    )
+
+    Object.values(stats).forEach(managerStats => {
+      Object.entries(managerStats).forEach(([day, count]) => {
+        aggregatedStats[day] += count
+      })
+    })
+
+    return aggregatedStats
   }
 
   // Количество общих, завершенных и отказных приемов за неделю (пн-пт) авторизованного пользователя
