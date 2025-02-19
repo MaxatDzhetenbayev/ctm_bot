@@ -114,6 +114,39 @@ export class UsersService {
     }
   }
 
+  async getManager(managerId: number) {
+    try {
+      const manager = await this.usersRepository.findOne({
+        where: {
+          id: managerId
+        },
+        include: [
+          {
+            model: Role,
+            where: { name: 'manager' },
+            attributes: ['name']
+          }
+        ]
+      })
+
+      if (!manager) {
+        throw new NotFoundException('Менеджер не найден')
+      }
+
+      if (manager.role.name !== 'manager') {
+        throw new BadRequestException('Пользователь не является менеджером')
+      }
+
+      return manager
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException('Ошибка при получении менеджера')
+    }
+  }
+
   async getProfileUser({ login }: { login: string }) {
     try {
       const user = await this.validateUserByLogin(login)

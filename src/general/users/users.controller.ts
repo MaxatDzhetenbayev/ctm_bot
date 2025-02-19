@@ -29,6 +29,10 @@ import {
   ApiUsersTags
 } from './users.swagger'
 
+interface RequestWithUser extends Request {
+  user: { id: number; login: string; role: string; center_id: number }
+}
+
 @ApiUsersTags()
 @Controller('users')
 export class UsersController {
@@ -64,9 +68,10 @@ export class UsersController {
 
   // Получение списка менеджеров по ID центра
   @HttpCode(HttpStatus.OK)
-  @Get('managers/center/:centerId')
+  @Get('managers/center')
   @ApiGetManagersByCenter()
-  async getManagers(@Req() req, @Param('centerId') centerId: number) {
+  async getManagers(@Req() req: RequestWithUser) {
+    const centerId = req.user.center_id
     return this.usersService.getManagersByCenter(centerId)
   }
 
@@ -98,6 +103,12 @@ export class UsersController {
     )
   }
 
+  @UseGuards(RolesGuard)
+  @HttpCode(HttpStatus.OK)
+  @Get('managers/:id')
+  async getManagerById(@Param('id') id: number) {
+    return this.usersService.getManager(id)
+  }
   @Get('openapi')
   getJsonSpec(@Res() res: Response) {
     const filePath = path.resolve('./swagger-spec.json')

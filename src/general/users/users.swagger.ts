@@ -135,7 +135,6 @@ export function ApiCreateManager() {
 export function ApiGetManagersByCenter() {
   return applyDecorators(
     ApiOperation({ summary: 'Получить список менеджеров по ID центра' }),
-    ApiParam({ name: 'centerId', type: Number, description: 'ID центра' }),
     ApiResponse({
       status: 200,
       description: 'Список менеджеров центра',
