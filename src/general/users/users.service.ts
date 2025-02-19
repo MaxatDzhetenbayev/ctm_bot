@@ -159,6 +159,10 @@ export class UsersService {
         {
           model: Role,
           attributes: ['name']
+        },
+        {
+          model: Center,
+          through: { attributes: [] }
         }
       ],
       plain: true
