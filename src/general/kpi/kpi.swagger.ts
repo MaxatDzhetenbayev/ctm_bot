@@ -52,7 +52,7 @@ export function ApiFindLastWeekdayByCenter() {
     ApiResponse({
       status: 200,
       description: 'Объект с завершенными приемами по дням недели',
-      schema: { example: { '18': { ср: 0, чт: 1, пт: 2, пн: 3, вт: 1 } } }
+      schema: { example: { пт: 2, пн: 3, вт: 1, ср: 0, чт: 0 } }
     })
   )
 }
