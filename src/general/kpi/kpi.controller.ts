@@ -26,7 +26,7 @@ interface RequestWithUser extends Request {
 export class KpiController {
   constructor(private readonly kpiService: KpiService) {}
 
-  // Количество завершенных приемов за неделю (пн-пт).
+  // Количество завершенных приемов за неделю (пн-пт) авторизованного пользователя
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.manager)
   @Get('weekday/completed')
@@ -41,7 +41,7 @@ export class KpiController {
   // Количество завершенных приемов за неделю (пн-пт) по ID
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get(':id/weekday/completed')
+  @Get('id/:id/weekday/completed')
   @ApiFindLastWeekdayById()
   async findLastWeekdayById(
     @Param('id') id: number
@@ -52,7 +52,7 @@ export class KpiController {
   // Количество завершенных приемов за неделю (пн-пт) по ID центра
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get('center/:centerId/weekday/completed')
+  @Get('center/total/weekday/completed')
   @ApiFindLastWeekdayByCenter()
   async findLastWeekdayByCenter(
     @Param('centerId') centerId: number
@@ -75,7 +75,7 @@ export class KpiController {
   // Количество общих, завершенных и отказных приемов за неделю (пн-пт) по ID центра
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get('center/:centerId/weekday/stats')
+  @Get('center/total/weekday/stats')
   @ApiGetStatsByCenter()
   async getStatsByCenter(
     @Param('centerId') centerId: number
@@ -111,7 +111,7 @@ export class KpiController {
   // Метрики за день по ID
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get(':id/today/summary')
+  @Get('id/:id/today/summary')
   @ApiGetSummaryById()
   async getSummaryById(@Param('id') id: number): Promise<{
     totalReceptions: number
@@ -133,7 +133,7 @@ export class KpiController {
   // Метрики за день по ID центра
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
-  @Get('center/:centerId/today/summary')
+  @Get('center/total/today/summary')
   @ApiGetDailySummaryByCenter()
   async getDailySummaryByCenter(@Param('centerId') centerId: number): Promise<
     Record<
@@ -148,36 +148,4 @@ export class KpiController {
   > {
     return this.kpiService.getDailySummaryByCenter(centerId)
   }
-
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.manager)
-  // @Get('today/total-receptions')
-  // async getTotalReceptionsToday(@Req() req: RequestWithUser): Promise<number> {
-  //   const managerId = req.user.id
-  //   return this.kpiService.getTotalReceptionsToday(managerId)
-  // }
-  //
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.manager)
-  // @Get('today/problematic-rate')
-  // async getProblematicRate(@Req() req: RequestWithUser): Promise<number> {
-  //   const managerId = req.user.id
-  //   return this.kpiService.getProblematicReceptionsRate(managerId)
-  // }
-  //
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.manager)
-  // @Get('today/average-rating')
-  // async getAverageRating(@Req() req: RequestWithUser): Promise<number> {
-  //   const managerId = req.user.id
-  //   return this.kpiService.getAverageClientRating(managerId)
-  // }
-  //
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.manager)
-  // @Get('today/manager-load')
-  // async getManagerLoad(@Req() req: RequestWithUser): Promise<number> {
-  //   const managerId = req.user.id
-  //   return this.kpiService.getManagerLoadToday(managerId)
-  // }
 }
