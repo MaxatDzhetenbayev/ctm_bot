@@ -71,7 +71,15 @@ export class KpiController {
       req.user.center_id
     )
 
+    if (!stats || Object.keys(stats).length === 0) {
+      return {}
+    }
+
     const firstManagerKey = Object.keys(stats)[0]
+    if (!firstManagerKey || !stats[firstManagerKey]) {
+      return {}
+    }
+
     const weekdays = Object.keys(stats[firstManagerKey])
 
     const aggregatedStats: Record<string, number> = weekdays.reduce(
@@ -188,7 +196,12 @@ export class KpiController {
         this.kpiService.getManagerLoadToday(id)
       ])
 
-    return { totalReceptions, problematicRate, averageRating, managerLoad }
+    return {
+      totalReceptions,
+      problematicRate,
+      averageRating: parseFloat(averageRating.toFixed(2)),
+      managerLoad
+    }
   }
 
   // Метрики за день по ID центра, возвращает статистику по центру, и по каждому менеджеру
