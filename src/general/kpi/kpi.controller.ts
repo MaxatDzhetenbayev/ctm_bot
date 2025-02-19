@@ -196,7 +196,12 @@ export class KpiController {
         this.kpiService.getManagerLoadToday(id)
       ])
 
-    return { totalReceptions, problematicRate, averageRating, managerLoad }
+    return {
+      totalReceptions,
+      problematicRate,
+      averageRating: parseFloat(averageRating.toFixed(2)),
+      managerLoad
+    }
   }
 
   // Метрики за день по ID центра, возвращает статистику по центру, и по каждому менеджеру
