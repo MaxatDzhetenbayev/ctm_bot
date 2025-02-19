@@ -125,6 +125,10 @@ export class UsersService {
             model: Role,
             where: { name: 'manager' },
             attributes: ['name']
+          },
+          {
+            model: Profile,
+            attributes: ['full_name', 'iin', 'phone']
           }
         ]
       })
