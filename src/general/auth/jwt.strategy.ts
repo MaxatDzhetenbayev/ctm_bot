@@ -1,7 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
-import { ExtractJwt, Strategy } from 'passport-jwt'
 import { Request } from 'express'
+import { ExtractJwt, Strategy } from 'passport-jwt'
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -9,7 +9,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          // console.log('Cookies:', request.cookies)
+          console.log('Cookies:', request.cookies)
           return request?.cookies?.access_token || null
         }
       ]),
@@ -22,11 +22,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!payload) {
       throw new UnauthorizedException('Invalid token')
     }
-    // console.log('JwtStrategy.validate() called:', payload)
+    console.log('JwtStrategy.validate() called:', payload)
     return {
       id: payload.id,
       login: payload.login,
-      role: payload.role
+      role: payload.role,
+      center_id: payload.center_id
     }
   }
 }

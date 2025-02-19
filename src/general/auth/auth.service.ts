@@ -1,10 +1,8 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
-
+import { JwtService, JwtSignOptions } from '@nestjs/jwt'
 import { User } from '../users/entities/user.entity'
 import { UsersService } from '../users/users.service'
-import { JwtService, JwtSignOptions } from '@nestjs/jwt'
-import { CreateUserDto } from '../users/dto/create-user.dto'
 import { LoginDto } from './dto/login.dto'
 
 @Injectable()
@@ -40,7 +38,7 @@ export class AuthService {
       id: user.id,
       login: user.login,
       role: user.role.name,
-      center_id: user.centers[0].id
+      center_id: user.centers[0]?.id
     }
 
     const result: { token: string } = {

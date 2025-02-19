@@ -81,13 +81,7 @@ export function ApiGetStatsByCenter() {
       status: 200,
       description: 'Объект с manager_id как ключом и статистикой по 5 дням',
       schema: {
-        example: {
-          '18': {
-            total: [8, 0, 0, 0, 0],
-            completed: [8, 0, 0, 0, 0],
-            declined: [0, 0, 0, 0, 0]
-          }
-        }
+        example: { total: 8, completed: 7, declined: 0 }
       }
     })
   )
@@ -139,12 +133,10 @@ export function ApiGetDailySummaryByCenter() {
       description: 'Объект с manager_id как ключом и показателями за день',
       schema: {
         example: {
-          '18': {
-            totalReceptions: 0,
-            problematicRate: 0,
-            averageRating: 0,
-            managerLoad: 0
-          }
+          totalReceptions: 0,
+          problematicRate: 0,
+          averageRating: 0,
+          managerLoad: 0
         }
       }
     })
