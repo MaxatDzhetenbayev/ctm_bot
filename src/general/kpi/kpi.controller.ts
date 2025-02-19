@@ -71,7 +71,15 @@ export class KpiController {
       req.user.center_id
     )
 
+    if (!stats || Object.keys(stats).length === 0) {
+      return {}
+    }
+
     const firstManagerKey = Object.keys(stats)[0]
+    if (!firstManagerKey || !stats[firstManagerKey]) {
+      return {}
+    }
+
     const weekdays = Object.keys(stats[firstManagerKey])
 
     const aggregatedStats: Record<string, number> = weekdays.reduce(
