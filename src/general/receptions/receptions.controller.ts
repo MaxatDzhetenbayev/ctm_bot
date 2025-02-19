@@ -1,21 +1,28 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
+  Patch,
+  Post,
   Query,
-  UseGuards,
   Req,
-} from "@nestjs/common";
-import { ReceptionsService } from "./receptions.service";
-import { RolesGuard } from "../auth/guards/roles.guard";
-import { Roles } from "../auth/guards/roles.decorator";
-import { RoleType } from "../users/entities/role.entity";
+  UseGuards
+} from '@nestjs/common'
+import { Roles } from '../auth/guards/roles.decorator'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { RoleType } from '../users/entities/role.entity'
+import { ReceptionsService } from './receptions.service'
+import {
+  ApiChangeReceptionStatus,
+  ApiCreateReception,
+  ApiFindAllReceptions,
+  ApiFindReceptionById,
+  ApiReceptionsTags
+} from './receptions.swagger'
 
-@Controller("receptions")
+@ApiReceptionsTags()
+@Controller('receptions')
 export class ReceptionsController {
   constructor(private readonly receptionsService: ReceptionsService) {}
 
@@ -24,6 +31,7 @@ export class ReceptionsController {
   //     return this.receptionsService.create();
   //   }
 
+  //   @ApiFindFreeTimeSlots()
   //   @Get()
   //   findFreeTimeSlots(
   //     @Query("centerId") centerId: number,
@@ -32,19 +40,19 @@ export class ReceptionsController {
   //   ) {
   //     return this.receptionsService.findFreeTimeSlots(centerId, serviceId, date);
   //   }
-
+  @ApiCreateReception()
   @Post()
   create(
     @Body()
     body: {
-      center_id: number;
-      service_id: number;
-      user_id: number;
-      date: string;
-      time: string;
+      center_id: number
+      service_id: number
+      user_id: number
+      date: string
+      time: string
     }
   ) {
-    return this.receptionsService.choiceManager(body);
+    return this.receptionsService.choiceManager(body)
   }
 
   //   @Get(":id")
@@ -52,29 +60,32 @@ export class ReceptionsController {
   //     return this.receptionsService.findOne(+id);
   //   }
 
+  @ApiFindAllReceptions()
   @UseGuards(RolesGuard)
   @Roles(RoleType.manager)
   @Get()
   findAll(@Req() req) {
     // console.log(req.user);
 
-    const id = req.user.id;
+    const id = req.user.id
 
-    return this.receptionsService.findAll(id);
+    return this.receptionsService.findAll(id)
   }
 
+  @ApiFindReceptionById()
   @UseGuards(RolesGuard)
   @Roles(RoleType.manager)
-  @Get(":id")
-  findOne(@Param("id") id: string) {
-    return this.receptionsService.findOne(+id);
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.receptionsService.findOne(+id)
   }
 
+  @ApiChangeReceptionStatus()
   @UseGuards(RolesGuard)
   @Roles(RoleType.manager)
-  @Patch(":id/status")
-  changeStatus(@Query("status") status: number, @Param("id") id: number) {
-    return this.receptionsService.changeReceptionStatus(id, status);
+  @Patch(':id/status')
+  changeStatus(@Query('status') status: number, @Param('id') id: number) {
+    return this.receptionsService.changeReceptionStatus(id, status)
   }
 
   //   @Patch(":id")

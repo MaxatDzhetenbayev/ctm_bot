@@ -29,37 +29,45 @@ export class KpiService {
     return weekdays
   }
 
-  async getReceptionsPerWeekday(managerId: number): Promise<number[]> {
-    const today = moment()
+  async getReceptionsPerWeekday(
+    managerId: number
+  ): Promise<Record<string, number>> {
+    moment.locale('ru')
+    const today = moment().add(1, 'days')
     const lastFiveWeekdays = this.getLastWeekdays(today)
-    const dates = lastFiveWeekdays.map(day => day.format('YYYY-MM-DD'))
 
+    const dates = lastFiveWeekdays
+      .map(day => day.format('YYYY-MM-DD'))
+      .reverse()
+    const weekdays = lastFiveWeekdays.map(day => day.format('dd')).reverse()
+    // console.log(dates)
+    // console.log(weekdays)
     const receptions = await this.receptionRepository.findAll({
       where: {
         manager_id: managerId,
-        date: { [Op.in]: dates }, 
+        date: { [Op.in]: dates },
         status_id: 4
       }
     })
 
     const counts: Record<string, number> = {}
-    dates.forEach(date => (counts[date] = 0))
+    weekdays.forEach(weekday => (counts[weekday] = 0))
 
     receptions.forEach(reception => {
-      const dateStr = moment(reception.date).format('YYYY-MM-DD')
-      if (counts[dateStr] !== undefined) {
-        counts[dateStr]++
+      const weekdayStr = moment(reception.date).format('dd')
+      if (counts[weekdayStr] !== undefined) {
+        counts[weekdayStr]++
       }
     })
 
-    return dates.map(date => counts[date])
+    return counts
   }
 
   async getReceptionStatsPerWeekday(managerId: number) {
-    const today = moment()
+    const today = moment().add(1, 'days')
     const lastFiveWeekdays = this.getLastWeekdays(today)
     const dates = lastFiveWeekdays.map(day => day.format('YYYY-MM-DD'))
-
+    // console.log(dates)
     const receptions = await this.receptionRepository.findAll({
       where: {
         manager_id: managerId,
@@ -77,7 +85,7 @@ export class KpiService {
 
   async getTotalReceptionsToday(managerId: number): Promise<number> {
     const today = moment().format('YYYY-MM-DD')
-
+    // console.log(today)
     return await this.receptionRepository.count({
       where: {
         manager_id: managerId,
@@ -135,12 +143,17 @@ export class KpiService {
     return (load / maxDailyLoad) * 100
   }
 
-  async getReceptionsPerWeekdayByAllManagers(
+  async getReceptionsPerWeekdayByCenter(
     centerId: number
-  ): Promise<Record<number, number[]>> {
-    const today = moment()
+  ): Promise<Record<number, Record<string, number>>> {
+    moment.locale('ru')
+    const today = moment().add(1, 'days')
     const lastFiveWeekdays = this.getLastWeekdays(today)
-    const dates = lastFiveWeekdays.map(day => day.format('YYYY-MM-DD'))
+
+    const dates = lastFiveWeekdays
+      .map(day => day.format('YYYY-MM-DD'))
+      .reverse()
+    const weekdays = lastFiveWeekdays.map(day => day.format('dd')).reverse()
 
     const managers = await this.managersRepository.findAll({
       where: { center_id: centerId },
@@ -150,7 +163,7 @@ export class KpiService {
     const managerIds = managers.map(manager => manager.manager_id)
 
     if (managerIds.length === 0) {
-      return {} 
+      return {}
     }
 
     const receptions = await this.receptionRepository.findAll({
@@ -163,16 +176,22 @@ export class KpiService {
       raw: true
     })
 
-    const receptionsByManager: Record<number, number[]> = {}
-    managerIds.forEach(id => (receptionsByManager[id] = Array(5).fill(0)))
+    const receptionsByManager: Record<number, Record<string, number>> = {}
+
+    managerIds.forEach(managerId => {
+      receptionsByManager[managerId] = {}
+      weekdays.forEach(weekday => (receptionsByManager[managerId][weekday] = 0))
+    })
 
     receptions.forEach((reception: any) => {
       const managerId = reception.manager_id
-      const dateStr = moment(reception.date).format('YYYY-MM-DD')
-      const index = dates.indexOf(dateStr)
+      const weekdayStr = moment(reception.date).format('dd')
 
-      if (index !== -1) {
-        receptionsByManager[managerId][index]++
+      if (
+        receptionsByManager[managerId] &&
+        receptionsByManager[managerId][weekdayStr] !== undefined
+      ) {
+        receptionsByManager[managerId][weekdayStr]++
       }
     })
 
@@ -196,7 +215,7 @@ export class KpiService {
     const managerIds = managers.map(manager => manager.manager_id)
 
     if (managerIds.length === 0) {
-      return {} 
+      return {}
     }
 
     const receptions = await this.receptionRepository.findAll({
@@ -223,7 +242,7 @@ export class KpiService {
     receptions.forEach((reception: any) => {
       const managerId = reception.manager_id
       const dateStr = moment(reception.date).format('YYYY-MM-DD')
-      const index = dates.indexOf(dateStr) 
+      const index = dates.indexOf(dateStr)
 
       if (index !== -1) {
         statsByManager[managerId].total[index]++
@@ -259,7 +278,7 @@ export class KpiService {
     const managerIds = managers.map(manager => manager.manager_id)
 
     if (managerIds.length === 0) {
-      return {} 
+      return {}
     }
 
     const receptions = await this.receptionRepository.findAll({
@@ -280,7 +299,7 @@ export class KpiService {
         managerLoad: number
       }
     > = {}
-    const maxDailyLoad = 32 
+    const maxDailyLoad = 32
 
     managerIds.forEach(id => {
       summaryByManager[id] = {

@@ -4,6 +4,7 @@ import { NestFactory } from '@nestjs/core'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
 import * as cookieParser from 'cookie-parser'
+import * as fs from 'fs'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
@@ -23,15 +24,24 @@ async function bootstrap() {
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('CTM API')
-    .setDescription('API для ABAI CTM QUEUE SYSTEM')
+    .setDescription(
+      `
+      API для Информационной системы ABAI CTM QUEUE 
+
+      ### 🔗 Скачать OpenAPI:  
+      - [📄 JSON](/users/openapi)
+    `
+    )
     .setVersion('1.0')
     .addCookieAuth('access_token')
     .build()
 
   const document = SwaggerModule.createDocument(app, swaggerConfig)
-  SwaggerModule.setup('api/docs', app, document)
+  SwaggerModule.setup('api', app, document)
 
-  await app.listen(config.getOrThrow<number>('PORT'))
+  fs.writeFileSync('./swagger-spec.json', JSON.stringify(document, null, 2))
+
+  await app.listen(config.getOrThrow<number>('APPLICATION_PORT'))
 }
 
 bootstrap()
