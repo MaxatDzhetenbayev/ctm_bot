@@ -41,6 +41,9 @@ export class CreateUserDto {
   @IsNumber()
   role: number
 
+  @IsNumber()
+  table: number
+
   @IsOptional()
   @IsNumber()
   center_id?: number
