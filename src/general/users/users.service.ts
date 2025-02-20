@@ -518,6 +518,15 @@ export class UsersService {
         transaction
       })
 
+      await this.managerTableRepository.create(
+        {
+          manager_id: newUser.id,
+          center_id: centerId,
+          table: dto.table
+        },
+        { transaction }
+      )
+
       if (!userProfile) {
         throw new InternalServerErrorException(
           'Ошибка при создании профиля пользователя'
