@@ -289,7 +289,7 @@ export class UsersService {
       })
 
       if (!profiles.length) {
-        throw new NotFoundException('Профили менеджеров не найдены')
+        return []
       }
 
       return profiles
