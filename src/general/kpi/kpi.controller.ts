@@ -110,6 +110,15 @@ export class KpiController {
     const managerId = req.user.id
     return this.kpiService.getReceptionStatsPerWeekday(managerId)
   }
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(RoleType.admin)
+  @Get('id/:id/weekday/stats')
+  @ApiGetStats()
+  async fundStatsById(
+    @Param('id') id: number
+  ): Promise<{ total: number; completed: number; declined: number }> {
+    return this.kpiService.getReceptionStatsPerWeekday(id)
+  }
 
   // // Количество общих, завершенных и отказных приемов за неделю (пн-пт) по ID центра, возвращает MANAGER ID: {TOTAL, COMPLETED, DECLINED}
   // @UseGuards(JwtAuthGuard, RolesGuard)
