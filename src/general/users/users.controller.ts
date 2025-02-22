@@ -75,16 +75,6 @@ export class UsersController {
     return this.usersService.getManagersByCenter(centerId)
   }
 
-  // Поиск работника по ФИО
-  @UseGuards(RolesGuard)
-  // @Roles(RoleType.admin)
-  @HttpCode(HttpStatus.OK)
-  @Get('managers/search')
-  @ApiSearchManager()
-  async searchManager(@Query('full_name') fullName: string, @Req() req) {
-    return this.usersService.getEmployeeByFullName(fullName, req.user)
-  }
-
   // Изменение информации о работнике по ID
   @UseGuards(RolesGuard)
   // @Roles(RoleType.admin)
