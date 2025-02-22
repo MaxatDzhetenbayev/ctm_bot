@@ -35,7 +35,7 @@ export class UsersService {
   async createUser(dto: CreateUserDto) {
     const transaction = await this.sequelize.transaction()
 
-    if ((dto.role = 1)) {
+    if ((dto.role === 1)) {
       throw new BadRequestException('У вас нет прав на создание данной роли')
     }
 
