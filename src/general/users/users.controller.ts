@@ -39,7 +39,7 @@ export class UsersController {
 
   @HttpCode(HttpStatus.CREATED)
   @UseGuards(RolesGuard)
-  @Roles(RoleType.admin)
+  @Roles(RoleType.superadmin, RoleType.admin, RoleType.manager)
   @Post()
   @ApiCreateUser()
   async create(@Body() body: CreateUserDto, @Req() req) {
