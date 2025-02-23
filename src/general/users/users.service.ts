@@ -239,7 +239,7 @@ export class UsersService {
   }: {
     dto: CreateUserDto
     auth_type?: AuthType
-    creater_role: RoleType
+    creater_role?: RoleType
   }) {
     const ROLE_HIERARCHY = {
       [RoleType.superadmin]: [RoleType.admin],
