@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -8,14 +9,13 @@ import {
   NotFoundException
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { Op } from 'sequelize'
-import { Sequelize } from 'sequelize-typescript'
+import { FindOptions, Op } from 'sequelize'
+import { Sequelize, SequelizeOptions } from 'sequelize-typescript'
 import { Center } from '../centers/entities/center.entity'
-import { CreateUserByTelegramDto } from './dto/create-user-by-telegram.dto'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ManagerTable } from './entities/manager-table.entity'
 import { Profile } from './entities/profile.entity'
-import { Role } from './entities/role.entity'
+import { Role, RoleType } from './entities/role.entity'
 import { AuthType, User } from './entities/user.entity'
 
 @Injectable()
@@ -25,94 +25,14 @@ export class UsersService {
     private readonly usersRepository: typeof User,
     @InjectModel(Profile)
     private readonly profilesRepository: typeof Profile,
+    @InjectModel(Role)
+    private readonly rolesRepository: typeof Role,
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
   ) {}
 
   private readonly logger = new Logger(this.usersRepository.name)
-
-  async createUser(dto: CreateUserDto) {
-    const transaction = await this.sequelize.transaction()
-
-    if ((dto.role === 1)) {
-      throw new BadRequestException('У вас нет прав на создание данной роли')
-    }
-
-    try {
-      const { login, password, role, profile, center_id, service_ids } = dto
-
-      const findUserInCenter = await this.usersRepository.findOne({
-        where: {
-          login
-        },
-        include: [
-          {
-            model: Center,
-            where: {
-              id: center_id
-            },
-            attributes: [],
-            through: { attributes: [] }
-          }
-        ]
-      })
-
-      if (findUserInCenter) {
-        throw new ConflictException(
-          'Пользователь с таким логином уже существует в данном центре'
-        )
-      }
-
-      const user = await this.usersRepository.create(
-        {
-          login,
-          password_hash: password,
-          role_id: role,
-          auth_type: AuthType.default
-        },
-        {
-          transaction
-        }
-      )
-
-      if (!user) {
-        throw new InternalServerErrorException(
-          'Ошибка при создании пользователя'
-        )
-      }
-
-      const userProfile = await user.$create('profile', profile, {
-        transaction
-      })
-
-      if (!userProfile) {
-        throw new InternalServerErrorException(
-          'Ошибка при создании профиля пользователя'
-        )
-      }
-
-      await user.$add('centers', center_id, { transaction })
-
-      if (service_ids) {
-        await user.$add('services', service_ids, { transaction })
-      }
-
-      await transaction.commit()
-
-      const { password_hash, ...user_data } = user.toJSON()
-
-      return user_data
-    } catch (error) {
-      await transaction.rollback()
-
-      if (error instanceof HttpException) {
-        throw error
-      }
-
-      throw new InternalServerErrorException('Ошибка при создании пользователя')
-    }
-  }
 
   async getManager(managerId: number) {
     try {
@@ -208,57 +128,6 @@ export class UsersService {
     return user
   }
 
-  async createUserByTelegram(dto: CreateUserByTelegramDto) {
-    this.logger.log('Создание пользователя')
-    try {
-      const transaction = await this.sequelize.transaction()
-
-      const { role, full_name, iin, phone, ...userData } = dto
-
-      const user = await this.usersRepository.create(userData, {
-        transaction
-      })
-
-      if (!user) {
-        this.logger.error('Ошибка при создании пользователя')
-        throw new InternalServerErrorException(
-          'Ошибка при создании пользователя'
-        )
-      }
-
-      const profile = await this.profilesRepository.create(
-        {
-          id: user.id,
-          iin,
-          full_name,
-          phone
-        },
-        { transaction }
-      )
-
-      if (!profile) {
-        this.logger.error('Ошибка при создании профиля пользователя')
-        throw new InternalServerErrorException(
-          'Ошибка при создании профиля пользователя'
-        )
-      }
-
-      await user.$set('role', role, { transaction })
-
-      await transaction.commit()
-
-      const result = {
-        user: user.toJSON(),
-        profile: profile.toJSON()
-      }
-
-      return result
-    } catch (error) {
-      this.logger.error('Ошибка при создании пользователя. Ошибка: ' + error)
-      throw new InternalServerErrorException('Ошибка при создании пользователя')
-    }
-  }
-
   async validateUserByTelegram(telegram_id: string) {
     this.logger.log('Проверка пользователя')
     const user = await this.usersRepository.findOne({
@@ -300,8 +169,6 @@ export class UsersService {
       throw new InternalServerErrorException('Ошибка при получении менеджеров')
     }
   }
-
-
 
   async updateEmployeeById(
     employeeId: number,
@@ -366,76 +233,109 @@ export class UsersService {
     }
   }
 
-  async createManager(dto: CreateUserDto, user: User) {
+  async createUser({
+    dto,
+    creater_role
+  }: {
+    dto: CreateUserDto
+    auth_type?: AuthType
+    creater_role: RoleType
+  }) {
+    const ROLE_HIERARCHY = {
+      [RoleType.superadmin]: [RoleType.admin],
+      [RoleType.admin]: [RoleType.manager, RoleType.user],
+      [RoleType.manager]: [RoleType.user],
+      [RoleType.user]: []
+    }
+
     const transaction = await this.sequelize.transaction()
-
     try {
-      let centerId = dto.center_id
-      if (!centerId) {
-        const userWithCenters = await this.usersRepository.findOne({
-          where: { id: user.id },
-          include: [{ model: Center, through: { attributes: [] } }]
-        })
+      this.logger.log('Создание пользователя')
+      const {
+        login,
+        password,
+        profile,
+        center_id,
+        role,
+        service_ids,
+        table,
+        auth_type
+      } = dto
 
-        if (!userWithCenters || !userWithCenters.centers.length) {
-          throw new BadRequestException(
-            'У вас нет привязанного центра, и он не указан в запросе'
-          )
-        }
-
-        centerId = userWithCenters.centers[0].id
-      }
-
-      console.log('📌 Центр для работника:', centerId)
-
-      const findUserInCenter = await this.usersRepository.findOne({
-        where: { login: dto.login },
-        include: [
-          {
-            model: Center,
-            where: { id: centerId },
-            attributes: [],
-            through: { attributes: [] }
-          }
-        ]
+      const createrRole = await this.rolesRepository.findOne({
+        where: { name: creater_role }
       })
 
-      if (findUserInCenter) {
-        throw new ConflictException(
-          'Пользователь с таким логином уже существует в данном центре'
+      if (!createrRole) {
+        throw new InternalServerErrorException('Роль создателя не найдена')
+      }
+
+      const AUTH_RESTRICTIONS = {
+        [RoleType.manager]: AuthType.offline,
+        [RoleType.user]: AuthType.telegram
+      }
+
+      if (
+        AUTH_RESTRICTIONS[createrRole.name] &&
+        auth_type !== AUTH_RESTRICTIONS[createrRole.name]
+      ) {
+        throw new ForbiddenException(
+          `У вас нет прав на создание пользователя с типом авторизации ${auth_type}`
         )
       }
 
-      const newUser = await this.usersRepository.create(
+      if (!ROLE_HIERARCHY[createrRole.name]?.includes(role)) {
+        throw new ForbiddenException('У вас нет прав на создание данной роли')
+      }
+
+      const userFindConfig: FindOptions = {}
+
+      if (auth_type === AuthType.default) {
+        userFindConfig.where = { login }
+      } else {
+        userFindConfig.include = [
+          {
+            model: Profile,
+            where: { iin: profile.iin }
+          }
+        ]
+      }
+
+      const findedUser = await this.usersRepository.findOne(userFindConfig)
+
+      if (findedUser) {
+        throw new ConflictException('Такой пользователь уже существует')
+      }
+
+      const { id: role_id } = await this.rolesRepository.findOne({
+        where: { name: role }
+      })
+
+      if (!role_id) {
+        throw new BadRequestException('Роль не найдена')
+      }
+
+      const user = await this.usersRepository.create(
         {
-          login: dto.login,
-          password_hash: dto.password,
-          role_id: dto.role ?? 2,
-          auth_type: AuthType.default
+          login,
+          password_hash: password,
+          role_id,
+          auth_type
         },
-        { transaction }
+        {
+          transaction
+        }
       )
 
-      if (!newUser) {
+      if (!user) {
         throw new InternalServerErrorException(
           'Ошибка при создании пользователя'
         )
       }
 
-      console.log('📌 Создан пользователь:', newUser)
-
-      const userProfile = await newUser.$create('profile', dto.profile, {
+      const userProfile = await user.$create('profile', profile, {
         transaction
       })
-
-      await this.managerTableRepository.create(
-        {
-          manager_id: newUser.id,
-          center_id: centerId,
-          table: dto.table
-        },
-        { transaction }
-      )
 
       if (!userProfile) {
         throw new InternalServerErrorException(
@@ -443,24 +343,39 @@ export class UsersService {
         )
       }
 
-      console.log('📌 Создан профиль работника:', userProfile)
+      await user.$add('centers', center_id, { transaction })
 
-      await newUser.$add('centers', centerId, { transaction })
+      if (service_ids) {
+        await user.$add('services', service_ids, { transaction })
+      }
 
-      if (dto.service_ids) {
-        await newUser.$add('services', dto.service_ids, { transaction })
+      if (table) {
+        await this.managerTableRepository.create(
+          {
+            manager_id: user.id,
+            center_id,
+            table
+          },
+          { transaction }
+        )
       }
 
       await transaction.commit()
 
-      const { password_hash, ...user_data } = newUser.toJSON()
-      return user_data
+      return {
+        message: 'Пользователь успешно создан',
+        statusCode: 201
+      }
     } catch (error) {
       await transaction.rollback()
+
+      this.logger.error('Ошибка при создании пользователя. Ошибка: ' + error)
+
       if (error instanceof HttpException) {
         throw error
       }
-      throw new InternalServerErrorException('Ошибка при создании работника')
+
+      throw new InternalServerErrorException('Ошибка при создании пользователя')
     }
   }
 }

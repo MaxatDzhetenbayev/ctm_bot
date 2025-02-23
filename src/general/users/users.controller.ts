@@ -18,16 +18,15 @@ import { Roles } from '../auth/guards/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CreateUserDto } from './dto/create-user.dto'
 import { RoleType } from './entities/role.entity'
-import { UsersService } from './users.service'
 import {
   ApiCreateManager,
   ApiCreateUser,
   ApiGetManagersByCenter,
   ApiGetProfile,
-  ApiSearchManager,
   ApiUpdateEmployee,
   ApiUsersTags
 } from './users.swagger'
+import { UsersService } from './users.service'
 
 interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
@@ -43,8 +42,11 @@ export class UsersController {
   @Roles(RoleType.admin)
   @Post()
   @ApiCreateUser()
-  async create(@Body() body: CreateUserDto) {
-    return this.usersService.createUser(body)
+  async create(@Body() body: CreateUserDto, @Req() req) {
+    return this.usersService.createUser({
+      dto: body,
+      creater_role: req.user.role
+    })
   }
 
   @HttpCode(HttpStatus.OK)
@@ -54,16 +56,6 @@ export class UsersController {
     return this.usersService.getProfileUser({
       login: req.user.login
     })
-  }
-
-  // Создание менеджера
-  @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RolesGuard)
-  // @Roles(RoleType.admin) // Только админы могут создавать сотрудников
-  @Post('manager')
-  @ApiCreateManager()
-  async createEmployee(@Body() body: CreateUserDto, @Req() req) {
-    return this.usersService.createManager(body, req.user)
   }
 
   // Получение списка менеджеров по ID центра
