@@ -7,6 +7,7 @@ import { BotAuthService } from '../bot_auth/bot_auth.service'
 
 import { AuthType } from 'src/general/users/entities/user.entity'
 import { RegistrationContext } from '../bot_auth/bot-auth.controller'
+import { RoleType } from 'src/general/users/entities/role.entity'
 
 @Update()
 export class BotAppController {
@@ -87,12 +88,17 @@ export class BotAppController {
       ctx.session.registrationStep = undefined
       const { full_name, iin, phone } = ctx.session
 
-      await this.userService.createUserByTelegram({
-        full_name,
-        iin,
-        phone,
-        telegram_id: ctx.chat?.id,
-        auth_type: AuthType.telegram
+      await this.userService.createUser({
+        dto: {
+          auth_type: AuthType.telegram,
+          role: RoleType.user,
+          telegram_id: ctx.chat?.id,
+          profile: {
+            full_name,
+            iin,
+            phone
+          }
+        }
       })
 
       await this.botCenterService.showCenters(ctx, ctx.session.language)

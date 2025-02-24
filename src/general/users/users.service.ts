@@ -258,35 +258,36 @@ export class UsersService {
         center_id,
         role,
         service_ids,
+        telegram_id,
         table,
         auth_type
       } = dto
 
-      const createrRole = await this.rolesRepository.findOne({
-        where: { name: creater_role }
-      })
+      // const createrRole = await this.rolesRepository.findOne({
+      //   where: { name: creater_role }
+      // })
 
-      if (!createrRole) {
-        throw new InternalServerErrorException('Роль создателя не найдена')
-      }
+      // if (!createrRole) {
+      //   throw new InternalServerErrorException('Роль создателя не найдена')
+      // }
 
-      const AUTH_RESTRICTIONS = {
-        [RoleType.manager]: AuthType.offline,
-        [RoleType.user]: AuthType.telegram
-      }
+      // const AUTH_RESTRICTIONS = {
+      //   [RoleType.manager]: AuthType.offline,
+      //   [RoleType.user]: AuthType.telegram
+      // }
 
-      if (
-        AUTH_RESTRICTIONS[createrRole.name] &&
-        auth_type !== AUTH_RESTRICTIONS[createrRole.name]
-      ) {
-        throw new ForbiddenException(
-          `У вас нет прав на создание пользователя с типом авторизации ${auth_type}`
-        )
-      }
+      // if (
+      //   AUTH_RESTRICTIONS[createrRole.name] &&
+      //   auth_type !== AUTH_RESTRICTIONS[createrRole.name]
+      // ) {
+      //   throw new ForbiddenException(
+      //     `У вас нет прав на создание пользователя с типом авторизации ${auth_type}`
+      //   )
+      // }
 
-      if (!ROLE_HIERARCHY[createrRole.name]?.includes(role)) {
-        throw new ForbiddenException('У вас нет прав на создание данной роли')
-      }
+      // if (!ROLE_HIERARCHY[createrRole.name]?.includes(role)) {
+      //   throw new ForbiddenException('У вас нет прав на создание данной роли')
+      // }
 
       const userFindConfig: FindOptions = {}
 
@@ -320,6 +321,7 @@ export class UsersService {
           login,
           password_hash: password,
           role_id,
+          telegram_id,
           auth_type
         },
         {
