@@ -122,7 +122,7 @@ export class BotServicesController {
 		\n${message[lang].phone}: ${ctx.session.phone}
 		`)
 
-    await ctx.reply(`${message[lang].isAcept}`, {
+    await ctx.reply(`${message[lang].isAccept}`, {
       reply_markup: {
         inline_keyboard: [
           [
