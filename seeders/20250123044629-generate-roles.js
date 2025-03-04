@@ -2,24 +2,24 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
+  async up(queryInterface) {
     await queryInterface.bulkInsert("roles", [
       {
-        name: "admin",
-      },
-      {
-        name: "hr",
+        name: "user",
       },
       {
         name: "manager",
       },
       {
-        name: "user",
+        name: "hr",
+      },
+      {
+        name: "admin",
       },
     ]);
   },
 
-  async down(queryInterface, Sequelize) {
-	 await queryInterface.bulkDelete("roles", null, {});
+  async down(queryInterface) {
+    await queryInterface.bulkDelete("roles", null, {});
   },
 };

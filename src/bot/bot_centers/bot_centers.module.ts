@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { BotCentersService } from "./bot_centers.service";
-import { CentersModule } from "src/manage/centers/centers.module";
+import { CentersModule } from "src/general/centers/centers.module";
 
 @Module({
   providers: [BotCentersService],
