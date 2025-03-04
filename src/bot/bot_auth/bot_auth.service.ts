@@ -56,11 +56,11 @@ export class BotAuthService {
   getStepPrompt(step: string, language: string): string {
     const prompts = {
       full_name: {
-        kz: "ФИО енгізіңіз",
+        kz: "Т.А.Ә енгізіңіз",
         ru: "Введите ваше ФИО",
       },
       iin: {
-        kz: "ИИН енгізіңіз",
+        kz: "ЖСН енгізіңіз",
         ru: "Введите ваш ИИН",
       },
       phone: {
