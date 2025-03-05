@@ -28,7 +28,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -512,26 +512,27 @@ export class UsersService {
         )
       }
 
-      console.log('📌 Создан пользователь:', newUser)
 
       const userProfile = await newUser.$create('profile', dto.profile, {
         transaction
       })
-
-      await this.managerTableRepository.create(
-        {
-          manager_id: newUser.id,
-          center_id: centerId,
-          table: dto.table
-        },
-        { transaction }
-      )
 
       if (!userProfile) {
         throw new InternalServerErrorException(
           'Ошибка при создании профиля пользователя'
         )
       }
+
+      await this.managerTableRepository.create(
+        {
+          manager_id: newUser.id,
+          center_id: centerId,
+          table: dto.table,
+          cabinet: dto.cabinet
+        },
+        { transaction }
+      )
+
 
       console.log('📌 Создан профиль работника:', userProfile)
 

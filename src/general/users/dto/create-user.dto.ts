@@ -11,6 +11,7 @@ import {
 } from 'class-validator'
 
 class ProfileDto {
+  @IsOptional()
   @IsString()
   @MaxLength(12)
   @MinLength(12)
