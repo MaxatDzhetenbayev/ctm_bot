@@ -25,7 +25,7 @@ export class ReceptionsService {
     @InjectModel(User)
     private userRepository: typeof User,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   logger = new Logger(ReceptionsService.name)
 
@@ -163,7 +163,6 @@ export class ReceptionsService {
 
   async findFreeTimeSlots(centerId: number, serviceId: number, date: string) {
     try {
-      // временных слоты с 9:00 до 18:00 включительно
       const availableSlots = [
         '09:00',
         '09:30',
@@ -184,6 +183,9 @@ export class ReceptionsService {
         '18:00',
         '18:30'
       ]
+
+      const currentTime = moment().format('HH:mm')
+      const filteredSlots = availableSlots.filter(slot => slot > currentTime)
 
       const managers = await this.userRepository.findAll({
         include: [
@@ -219,8 +221,7 @@ export class ReceptionsService {
           })
         }
 
-        // Список свободных слотов для текущего менеджера
-        const freeSlots = availableSlots.filter(slot => !bookedSlots.has(slot))
+        const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
 
         return {
           managerId: manager.id,
