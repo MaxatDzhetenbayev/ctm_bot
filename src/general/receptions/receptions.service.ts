@@ -357,7 +357,7 @@ export class ReceptionsService {
       }
 
       const managerProfile = await leastBusyManager.$get('profile')
-      const { table } = await leastBusyManager.$get('manager_table')
+      const { table, cabinet } = await leastBusyManager.$get('manager_table')
 
       const center = leastBusyManager.get('centers')[0].name
       const service = leastBusyManager.get('services')[0].name
@@ -366,6 +366,7 @@ export class ReceptionsService {
         reception,
         profile: managerProfile,
         table,
+        cabinet,
         center,
         service
       }

@@ -171,7 +171,7 @@ export class BotServicesController {
       return
     }
 
-    const { reception, center, service, profile, table } = data
+    const { reception, center, service, profile, table, cabinet } = data
 
 
     const message = {
@@ -180,6 +180,7 @@ export class BotServicesController {
         center: 'Центр',
         service: 'Сервис',
         manager: 'Менеджер',
+        cabinet: 'Кабинет',
         table: 'Стол',
         date: 'Дата',
         time: 'Время'
@@ -189,6 +190,7 @@ export class BotServicesController {
         center: 'Оратлық',
         service: 'Қызмет түрі',
         manager: 'Маман',
+        cabinet: 'Кабинет',
         table: 'Үстел',
         date: 'Күні',
         time: 'Уақыты'
@@ -201,6 +203,7 @@ export class BotServicesController {
     	\n${message[lang].service}: ${service[ctx.session.language]}
     	\n${message[lang].manager}: ${profile.full_name}
     	\n${message[lang].table}: ${table}
+    	\n${message[lang].cabinet}: ${cabinet}
     	\n${message[lang].date}: ${moment(reception.date).format('DD.MM.YYYY')}
     	\n${message[lang].time}: ${reception.time}`
     )
