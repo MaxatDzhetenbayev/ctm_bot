@@ -187,7 +187,7 @@ export class BotServicesController {
       },
       kz: {
         success: 'Сіз тіркелдіңіз!',
-        center: 'Оратлық',
+        center: 'Орталық',
         service: 'Қызмет түрі',
         manager: 'Маман',
         cabinet: 'Кабинет',
