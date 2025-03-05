@@ -21,4 +21,10 @@ export class ManagerTable extends Model<ManagerTable> {
     type: DataTypes.NUMBER,
   })
   table: number;
+
+  @Column({
+    allowNull: false,
+    type: DataTypes.NUMBER,
+  })
+  cabinet: number;
 }

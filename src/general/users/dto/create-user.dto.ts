@@ -44,6 +44,9 @@ export class CreateUserDto {
   @IsNumber()
   table: number
 
+  @IsNumber()
+  cabinet: number
+
   @IsOptional()
   @IsNumber()
   center_id?: number
