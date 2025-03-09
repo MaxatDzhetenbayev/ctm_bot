@@ -64,10 +64,9 @@ export class CreateUserDto {
   @IsNumber()
   table?: number
 
-
   @ValidateIf(o => o.auth_type !== AuthType.telegram)
   @IsNumber()
-  cabinet: number
+  cabinet?: number
 
   @IsOptional()
   @IsNumber()
