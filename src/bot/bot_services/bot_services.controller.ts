@@ -237,4 +237,20 @@ export class BotServicesController {
     	\n${message[lang].time}: ${reception.time}`
     )
   }
+
+  @Action(/cancel_(.+)/)
+  async cancelRepection(ctx: Context) {
+    const receptionId = parseInt(ctx.match[1])
+
+    const reception = await this.receptionsService.findOne(receptionId)
+
+    if (reception.status.name !== 'pending') {
+      await ctx.reply('Вы не можете отменить запись')
+      return
+    }
+
+    await this.receptionsService.changeReceptionStatus(receptionId, 5)
+
+    await ctx.reply('Запись успешно отменена')
+  }
 }
