@@ -11,7 +11,7 @@ export class BotServicesController {
     private readonly botServicesService: BotServicesService,
     private readonly receptionsService: ReceptionsService,
     private readonly userService: UsersService
-  ) { }
+  ) {}
 
   @Action(/services_(.+)/)
   async onServices(@Ctx() ctx: Context) {
@@ -47,7 +47,7 @@ export class BotServicesController {
     }
     const lang = ctx.session.language
     const selectedDate = ctx.match[1]
-    const formattedDate = moment.utc(selectedDate).startOf('day').toISOString()
+    const formattedDate = moment.utc(selectedDate).format('YYYY-MM-DD')
     ctx.session.date = formattedDate
 
     const timeSlots = await this.receptionsService.findFreeTimeSlots(
@@ -126,8 +126,14 @@ export class BotServicesController {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: `${message[lang].accept}`, callback_data: 'confirm_appointment' },
-            { text: `${message[lang].repeat}`, callback_data: `services_${center}` }
+            {
+              text: `${message[lang].accept}`,
+              callback_data: 'confirm_appointment'
+            },
+            {
+              text: `${message[lang].repeat}`,
+              callback_data: `services_${center}`
+            }
           ]
         ]
       }
@@ -136,7 +142,6 @@ export class BotServicesController {
 
   @Action('confirm_appointment')
   async onAppointmentConfirm(ctx: Context) {
-
     const lang = ctx.session.language
 
     if (ctx.callbackQuery?.message) {
@@ -172,7 +177,6 @@ export class BotServicesController {
     }
 
     const { reception, center, service, profile, table, cabinet } = data
-
 
     const message = {
       ru: {
