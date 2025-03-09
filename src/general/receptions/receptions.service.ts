@@ -83,6 +83,63 @@ export class ReceptionsService {
     }
   }
 
+  async findByUserTelegramId(telegramId: string) {
+    try {
+      this.logger.log(`Получение приема по telegramId ${telegramId}`)
+      const user = await this.userRepository.findOne({
+        where: {
+          telegram_id: telegramId
+        }
+      })
+
+      if (!user) {
+        throw new NotFoundException('Пользователь не найден')
+      }
+
+      const receptions = await this.receptionRepository.findAll({
+        where: {
+          user_id: user.id
+        },
+        include: [
+          {
+            model: Status,
+            attributes: ['name']
+          },
+          {
+            model: Service,
+            attributes: ['name']
+          },
+          {
+            model: User,
+            as: 'manager',
+            attributes: ['id'],
+            required: true,
+            include: [
+              {
+                model: Profile,
+                attributes: ['iin', 'full_name', 'phone']
+              }
+            ]
+          }
+        ],
+        limit: 5
+      })
+
+      if (receptions.length === 0) {
+        return []
+      }
+
+      return receptions
+    } catch (error) {
+      this.logger.error(`Ошибка при получении приема: ${error}`)
+      if (error instanceof NotFoundException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException('Ошибка при получении приема')
+    }
+  }
+
   async findOne(id: number) {
     try {
       this.logger.log(`Получение приема ${id}`)
