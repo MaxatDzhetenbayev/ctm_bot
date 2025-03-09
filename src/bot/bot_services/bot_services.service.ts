@@ -8,6 +8,10 @@ export class BotServicesService {
   constructor(private readonly servicesService: ServicesService) {}
 
   async showServices(ctx, centerId) {
+    if (ctx.session.preAppointmentMessageId) {
+      await ctx.deleteMessage(ctx.session.preAppointmentMessageId)
+    }
+
     ctx.session.centerId = centerId
     const lang = ctx.session.language
     const services = await this.servicesService.findAll()

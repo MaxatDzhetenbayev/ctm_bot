@@ -45,16 +45,45 @@ export class BotServicesController {
     if (ctx.callbackQuery?.message) {
       await ctx.deleteMessage()
     }
+
     const lang = ctx.session.language
     const selectedDate = ctx.match[1]
     const formattedDate = moment.utc(selectedDate).format('YYYY-MM-DD')
     ctx.session.date = formattedDate
+
+    if (ctx.session.noSlotsMessageId) {
+      await ctx.telegram
+        .deleteMessage(ctx.chat.id, ctx.session.noSlotsMessageId)
+        .catch(() => {})
+      ctx.session.noSlotsMessageId = null
+    }
 
     const timeSlots = await this.receptionsService.findFreeTimeSlots(
       ctx.session.centerId,
       ctx.session.serviceId,
       ctx.session.date
     )
+
+    const message = {
+      ru: {
+        date: 'Выберите время',
+        noSlots:
+          'К сожалению, все слоты заняты. Попробуйте записаться на другое время.'
+      },
+      kz: {
+        date: 'Келу уақытын таңдаңыз',
+        noSlots:
+          'Кешіріңіз, бұл күннің қабылдау уақыттары толығымен бос емес. Басқа уақытқа тіркеліп көріңіз.'
+      }
+    }
+
+    if (timeSlots.length === 0) {
+      const noSlotsMessage = await ctx.reply(message[lang].noSlots)
+
+      this.botServicesService.getChoiceDatePropmpt(ctx)
+      ctx.session.noSlotsMessageId = noSlotsMessage.message_id
+      return
+    }
 
     const keyboard = []
     for (let i = 0; i < timeSlots.length; i += 4) {
@@ -66,12 +95,7 @@ export class BotServicesController {
       )
     }
 
-    const message = {
-      ru: 'Выберите время на дату',
-      kz: 'Келу уақытын таңдаңыз'
-    }
-
-    await ctx.reply(`${message[lang]}: ${selectedDate}`, {
+    await ctx.reply(`${message[lang].date}: ${selectedDate}`, {
       reply_markup: {
         inline_keyboard: keyboard
       }
@@ -114,13 +138,14 @@ export class BotServicesController {
       }
     }
 
-    await ctx.reply(`${message[lang].data}:
+    const preAppointmentMessage = await ctx.reply(`${message[lang].data}:
 		\n${message[lang].date}: ${moment(ctx.session.date).format('DD.MM.YYYY')}
 		\n${message[lang].time}: ${ctx.session.time}
 		\n${message[lang].iin}: ${ctx.session.iin}
 		\n${message[lang].full_name}: ${ctx.session.full_name}
 		\n${message[lang].phone}: ${ctx.session.phone}
 		`)
+    ctx.session.preAppointmentMessageId = preAppointmentMessage.message_id
 
     await ctx.reply(`${message[lang].isAccept}`, {
       reply_markup: {
