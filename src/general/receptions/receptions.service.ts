@@ -25,7 +25,7 @@ export class ReceptionsService {
     @InjectModel(User)
     private userRepository: typeof User,
     private readonly sequelize: Sequelize
-  ) { }
+  ) {}
 
   logger = new Logger(ReceptionsService.name)
 
@@ -185,7 +185,10 @@ export class ReceptionsService {
       ]
 
       const currentTime = moment().format('HH:mm')
-      const filteredSlots = availableSlots.filter(slot => slot > currentTime)
+      const filteredSlots =
+        date === moment().format('YYYY-MM-DD')
+          ? availableSlots.filter(slot => slot > currentTime)
+          : availableSlots
 
       const managers = await this.userRepository.findAll({
         include: [
