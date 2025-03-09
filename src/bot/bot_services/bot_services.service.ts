@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { ServicesService } from 'src/general/services/services.service'
 import { Context } from 'vm'
 import * as moment from 'moment'
+import { message } from 'src/config/translations'
 
 @Injectable()
 export class BotServicesService {
@@ -23,12 +24,7 @@ export class BotServicesService {
       }
     ])
 
-    const message = {
-      ru: 'Выберите услугу',
-      kz: 'Қызметті таңдаңыз'
-    }
-
-    await ctx.reply(`${message[lang]}`, {
+    await ctx.reply(`${message[lang].choice_service}`, {
       reply_markup: { inline_keyboard: keyboardServices }
     })
   }
@@ -51,12 +47,7 @@ export class BotServicesService {
       }
     ])
 
-    const message = {
-      ru: 'У этой услуги есть подуслуги, выберите одну из них:',
-      kz: 'Бұл қызметтің ішінде қызметтер бар, олардан бірін таңдаңыз:'
-    }
-
-    await ctx.reply(`${message[lang]}`, {
+    await ctx.reply(`${message[lang].sub_service}`, {
       reply_markup: {
         inline_keyboard: keyboardServices
       }
@@ -77,12 +68,8 @@ export class BotServicesService {
       }))
       keyboard.push(row)
     }
-    const message = {
-      ru: 'Выберите дату для посещения.',
-      kz: 'Келу күнін таңдаңыз.'
-    }
 
-    await ctx.reply(`${message[lang]}`, {
+    await ctx.reply(`${message[lang].choice_date}`, {
       reply_markup: {
         inline_keyboard: keyboard
       }

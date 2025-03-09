@@ -4,6 +4,7 @@ import { Action, Ctx, Update } from 'nestjs-telegraf'
 import { Context } from 'vm'
 import { ReceptionsService } from 'src/general/receptions/receptions.service'
 import { UsersService } from 'src/general/users/users.service'
+import { message } from 'src/config/translations'
 
 @Update()
 export class BotServicesController {
@@ -64,19 +65,6 @@ export class BotServicesController {
       ctx.session.date
     )
 
-    const message = {
-      ru: {
-        date: 'Выберите время',
-        noSlots:
-          'К сожалению, все слоты заняты. Попробуйте записаться на другое время.'
-      },
-      kz: {
-        date: 'Келу уақытын таңдаңыз',
-        noSlots:
-          'Кешіріңіз, бұл күннің қабылдау уақыттары толығымен бос емес. Басқа уақытқа тіркеліп көріңіз.'
-      }
-    }
-
     if (timeSlots.length === 0) {
       const noSlotsMessage = await ctx.reply(message[lang].noSlots)
 
@@ -95,7 +83,7 @@ export class BotServicesController {
       )
     }
 
-    await ctx.reply(`${message[lang].date}: ${selectedDate}`, {
+    await ctx.reply(`${message[lang].choice_time}: ${selectedDate}`, {
       reply_markup: {
         inline_keyboard: keyboard
       }
@@ -113,31 +101,6 @@ export class BotServicesController {
 
     const center = ctx.session.centerId
 
-    const message = {
-      ru: {
-        data: 'Ваши данные для записи',
-        date: 'Дата',
-        time: 'Время',
-        iin: 'ИИН',
-        full_name: 'ФИО',
-        phone: 'Телефон',
-        isAccept: 'Подтвердить запись?',
-        accept: 'Подтвердить',
-        repeat: 'Записаться заново'
-      },
-      kz: {
-        data: 'Тіркелу деректеріңіз',
-        date: 'Күні',
-        time: 'Уақыты',
-        iin: 'ЖСН',
-        full_name: 'Аты-жөніңіз',
-        phone: 'Телефон',
-        isAccept: 'Жазбаңызды растайсыз ба?',
-        accept: 'Растау',
-        repeat: 'Қайта тіркелу'
-      }
-    }
-
     const preAppointmentMessage = await ctx.reply(`${message[lang].data}:
 		\n${message[lang].date}: ${moment(ctx.session.date).format('DD.MM.YYYY')}
 		\n${message[lang].time}: ${ctx.session.time}
@@ -147,7 +110,7 @@ export class BotServicesController {
 		`)
     ctx.session.preAppointmentMessageId = preAppointmentMessage.message_id
 
-    await ctx.reply(`${message[lang].isAccept}`, {
+    await ctx.reply(`${message[lang].confirm}`, {
       reply_markup: {
         inline_keyboard: [
           [
@@ -203,31 +166,8 @@ export class BotServicesController {
 
     const { reception, center, service, profile, table, cabinet } = data
 
-    const message = {
-      ru: {
-        success: 'Вы успешно записаны!',
-        center: 'Центр',
-        service: 'Сервис',
-        manager: 'Менеджер',
-        cabinet: 'Кабинет',
-        table: 'Стол',
-        date: 'Дата',
-        time: 'Время'
-      },
-      kz: {
-        success: 'Сіз тіркелдіңіз!',
-        center: 'Орталық',
-        service: 'Қызмет түрі',
-        manager: 'Маман',
-        cabinet: 'Кабинет',
-        table: 'Үстел',
-        date: 'Күні',
-        time: 'Уақыты'
-      }
-    }
-
     await ctx.reply(
-      `${message[lang].success}
+      `${message[lang].success_reception}
     	\n${message[lang].center}: ${center[ctx.session.language]}
     	\n${message[lang].service}: ${service[ctx.session.language]}
     	\n${message[lang].manager}: ${profile.full_name}
@@ -236,6 +176,8 @@ export class BotServicesController {
     	\n${message[lang].date}: ${moment(reception.date).format('DD.MM.YYYY')}
     	\n${message[lang].time}: ${reception.time}`
     )
+
+    ctx.session.preAppointmentMessageId = null
   }
 
   @Action(/cancel_(.+)/)
