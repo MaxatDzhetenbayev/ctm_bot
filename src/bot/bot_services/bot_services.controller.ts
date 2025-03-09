@@ -11,7 +11,7 @@ export class BotServicesController {
     private readonly botServicesService: BotServicesService,
     private readonly receptionsService: ReceptionsService,
     private readonly userService: UsersService
-  ) {}
+  ) { }
 
   @Action(/services_(.+)/)
   async onServices(@Ctx() ctx: Context) {
@@ -108,7 +108,9 @@ export class BotServicesController {
         iin: 'ЖСН',
         full_name: 'Аты-жөніңіз',
         phone: 'Телефон',
-        isAccept: 'Жазбаңызды растайсыз ба?'
+        isAccept: 'Жазбаңызды растайсыз ба?',
+        accept: 'Растау',
+        repeat: 'Қайта тіркелу'
       }
     }
 
@@ -120,12 +122,12 @@ export class BotServicesController {
 		\n${message[lang].phone}: ${ctx.session.phone}
 		`)
 
-    await ctx.reply(`Подтвердить запись?`, {
+    await ctx.reply(`${message[lang].isAccept}`, {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: 'Подтвердить', callback_data: 'confirm_appointment' },
-            { text: 'Записаться заново', callback_data: `services_${center}` }
+            { text: `${message[lang].accept}`, callback_data: 'confirm_appointment' },
+            { text: `${message[lang].repeat}`, callback_data: `services_${center}` }
           ]
         ]
       }
@@ -134,6 +136,9 @@ export class BotServicesController {
 
   @Action('confirm_appointment')
   async onAppointmentConfirm(ctx: Context) {
+
+    const lang = ctx.session.language
+
     if (ctx.callbackQuery?.message) {
       await ctx.deleteMessage()
     }
@@ -166,16 +171,41 @@ export class BotServicesController {
       return
     }
 
-    const { reception, center, service, profile, table } = data
+    const { reception, center, service, profile, table, cabinet } = data
+
+
+    const message = {
+      ru: {
+        success: 'Вы успешно записаны!',
+        center: 'Центр',
+        service: 'Сервис',
+        manager: 'Менеджер',
+        cabinet: 'Кабинет',
+        table: 'Стол',
+        date: 'Дата',
+        time: 'Время'
+      },
+      kz: {
+        success: 'Сіз тіркелдіңіз!',
+        center: 'Орталық',
+        service: 'Қызмет түрі',
+        manager: 'Маман',
+        cabinet: 'Кабинет',
+        table: 'Үстел',
+        date: 'Күні',
+        time: 'Уақыты'
+      }
+    }
 
     await ctx.reply(
-      `Вы успешно записаны!
-    	\nЦентр: ${center[ctx.session.language]}
-    	\nСервис: ${service[ctx.session.language]}
-    	\nМенеджер: ${profile.full_name}
-    	\nСтол: ${table}
-    	\nДата: ${moment(reception.date).format('DD.MM.YYYY')}
-    	\nВремя: ${reception.time}`
+      `${message[lang].success}
+    	\n${message[lang].center}: ${center[ctx.session.language]}
+    	\n${message[lang].service}: ${service[ctx.session.language]}
+    	\n${message[lang].manager}: ${profile.full_name}
+    	\n${message[lang].table}: ${table}
+    	\n${message[lang].cabinet}: ${cabinet}
+    	\n${message[lang].date}: ${moment(reception.date).format('DD.MM.YYYY')}
+    	\n${message[lang].time}: ${reception.time}`
     )
   }
 }

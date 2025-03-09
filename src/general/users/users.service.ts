@@ -30,7 +30,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -335,7 +335,7 @@ export class UsersService {
         )
       }
 
-      const userProfile = await user.$create('profile', profile, {
+      const userProfile = await user.$create('profile', dto.profile, {
         transaction
       })
 
@@ -346,6 +346,17 @@ export class UsersService {
       }
 
       await user.$add('centers', center_id, { transaction })
+
+      await this.managerTableRepository.create(
+        {
+          manager_id: user.id,
+          center_id,
+          table: dto.table,
+          cabinet: dto.cabinet
+        },
+        { transaction }
+      )
+
 
       if (service_ids) {
         await user.$add('services', service_ids, { transaction })

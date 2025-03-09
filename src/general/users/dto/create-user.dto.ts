@@ -15,6 +15,7 @@ import { AuthType } from '../entities/user.entity'
 import { RoleType } from '../entities/role.entity'
 
 class ProfileDto {
+  @IsOptional()
   @IsString()
   @MinLength(2)
   full_name: string
@@ -63,7 +64,12 @@ export class CreateUserDto {
   @IsNumber()
   table?: number
 
+
   @ValidateIf(o => o.auth_type !== AuthType.telegram)
+  @IsNumber()
+  cabinet: number
+
+  @IsOptional()
   @IsNumber()
   center_id?: number
 
