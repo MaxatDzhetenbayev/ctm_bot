@@ -1,10 +1,11 @@
 import {
-	IsOptional,
-	IsPhoneNumber,
-	IsString,
-	MaxLength,
-	MinLength,
- } from "class-validator";
+  IsIn,
+  IsOptional,
+  IsPhoneNumber,
+  IsString,
+  MaxLength,
+  MinLength,
+} from "class-validator";
 
 export class RegistrationDto {
   @IsOptional()
@@ -21,4 +22,8 @@ export class RegistrationDto {
   @IsOptional()
   @IsPhoneNumber("KZ")
   phone?: string;
+
+  @IsOptional()
+  @IsIn(['1', '2'])
+  visitor_type?: string;
 }

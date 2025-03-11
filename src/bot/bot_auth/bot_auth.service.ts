@@ -20,6 +20,7 @@ export class BotAuthService {
 
       if (registrationStep === 'full_name') return 'iin'
       if (registrationStep === 'iin') return 'phone'
+      if (registrationStep === 'phone') return 'visitor_type'
       return null
     } catch (error) {
       await ctx.reply(this.getValidationError(registrationStep))
@@ -66,6 +67,10 @@ export class BotAuthService {
       phone: {
         kz: 'Телефон нөміріңізді енгізіңіз',
         ru: 'Введите ваш номер телефона'
+      },
+      visitor_type: {
+        kz: 'Егер сіз жұмыс беруші болсаңыз, 1 енгізіңіз, егер өтініш беруші болсаңыз, 2 енгізіңіз',
+        ru: 'Если вы работодатель, введите 1, если соискатель, введите 2'
       }
     }
 
@@ -76,7 +81,8 @@ export class BotAuthService {
     const errors = {
       full_name: 'ФИО должно быть строкой не менее 6 символов',
       iin: 'ИИН должен быть строкой из 12 символов',
-      phone: 'Номер телефона должен быть валидным'
+      phone: 'Номер телефона должен быть валидным',
+      visitor_type: 'Число должно быть 1 или 2'
     }
 
     return errors[step] || 'Некорректные данные'

@@ -12,6 +12,7 @@ export interface RegistrationContext extends Context {
     full_name?: string
     iin?: string
     phone?: string
+    visitor_type?: string
     language: string
   }
 }
@@ -22,7 +23,7 @@ export class BotAuthController {
     private readonly botAuthService: BotAuthService,
     private readonly userService: UsersService,
     private readonly botCenterService: BotCentersService
-  ) {}
+  ) { }
 
   @Action('registration')
   async onRegistration(@Ctx() ctx: Context) {
@@ -48,10 +49,11 @@ export class BotAuthController {
       )
     } else {
       ctx.session.registrationStep = undefined
-      const { full_name, iin, phone } = ctx.session
+      const { full_name, iin, phone, visitor_type } = ctx.session
 
       await this.userService.createUser({
         dto: {
+          visitor_type: Number(visitor_type),
           auth_type: AuthType.telegram,
           role: RoleType.user,
           telegram_id: ctx.chat?.id,

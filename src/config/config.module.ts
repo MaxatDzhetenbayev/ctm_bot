@@ -13,6 +13,7 @@ import { ManagerTable } from 'src/general/users/entities/manager-table.entity'
 import { Profile } from 'src/general/users/entities/profile.entity'
 import { Role } from 'src/general/users/entities/role.entity'
 import { User } from 'src/general/users/entities/user.entity'
+import { VisitorTypesTable } from 'src/general/users/entities/visitor_types.entity'
 import { Status } from 'src/status/entities/status.entity'
 import * as LocalSession from 'telegraf-session-local'
 
@@ -51,7 +52,8 @@ const sessions = new LocalSession({ database: 'session_db.json' })
           ManagerServices,
           Reception,
           ManagerTable,
-          Status
+          Status,
+          VisitorTypesTable
         ]
       })
     }),
@@ -74,4 +76,4 @@ const sessions = new LocalSession({ database: 'session_db.json' })
   ],
   exports: [SequelizeModule]
 })
-export class AppConfigModule {}
+export class AppConfigModule { }

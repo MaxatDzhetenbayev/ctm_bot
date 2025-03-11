@@ -21,6 +21,7 @@ import { Service } from "src/general/services/entities/service.entity";
 import { ManagerServices } from "src/general/services/entities/manager-services.entity";
 import { Reception } from "src/general/receptions/entities/reception.entity";
 import { ManagerTable } from "./manager-table.entity";
+import { VisitorTypesTable } from "./visitor_types.entity";
 
 export enum AuthType {
   telegram = "telegram",
@@ -48,6 +49,9 @@ export class User extends Model<User> {
   @ForeignKey(() => Role)
   role_id: number;
 
+  @ForeignKey(() => VisitorTypesTable)
+  visitor_type_id: number;
+
   @BelongsTo(() => Role)
   role: Role;
 
@@ -64,6 +68,9 @@ export class User extends Model<User> {
 
   @HasOne(() => ManagerTable)
   manager_table: ManagerTable;
+
+  @BelongsTo(() => VisitorTypesTable)
+  visitor_type: VisitorTypesTable;
 
   @HasMany(() => Reception, { foreignKey: "user_id", as: "user_receptions" })
   user_receptions!: Reception[];

@@ -30,7 +30,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -255,7 +255,9 @@ export class UsersService {
         login,
         password,
         profile,
+        visitor_type,
         center_id,
+        cabinet,
         role,
         service_ids,
         telegram_id,
@@ -322,7 +324,8 @@ export class UsersService {
           password_hash: password,
           role_id,
           telegram_id,
-          auth_type
+          auth_type,
+          visitor_type_id: visitor_type
         },
         {
           transaction
@@ -335,7 +338,7 @@ export class UsersService {
         )
       }
 
-      const userProfile = await user.$create('profile', dto.profile, {
+      const userProfile = await user.$create('profile', profile, {
         transaction
       })
 
@@ -352,8 +355,8 @@ export class UsersService {
           {
             manager_id: user.id,
             center_id,
-            table: dto.table,
-            cabinet: dto.cabinet
+            table: table,
+            cabinet: cabinet
           },
           { transaction }
         )
