@@ -70,15 +70,15 @@ module.exports = {
       },
       {
         service_id: 9,
-        visitor_type_id: 1
+        visitor_type_id: 2
       },
       {
         service_id: 10,
-        visitor_type_id: 1
+        visitor_type_id: 2
       },
       {
         service_id: 11,
-        visitor_type_id: 1
+        visitor_type_id: 2
       }
     ])
   },
