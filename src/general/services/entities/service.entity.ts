@@ -10,6 +10,7 @@ import {
 } from "sequelize-typescript";
 import { ManagerServices } from "./manager-services.entity";
 import { User } from "src/general/users/entities/user.entity";
+import { VisitorType } from "./visitor-type";
 
 @Table({
   tableName: "services",
@@ -25,6 +26,10 @@ export class Service extends Model<Service> {
   @Column
   parent_id: number;
 
+  @ForeignKey(() => VisitorType)
+  @Column
+  visitor_type_id: number;
+
   @BelongsTo(() => Service, { as: "parent" })
   parent: Service;
 
@@ -33,4 +38,8 @@ export class Service extends Model<Service> {
 
   @BelongsToMany(() => User, () => ManagerServices)
   users: User[];
+
+
+  @BelongsTo(() => VisitorType)
+  visitor_type: VisitorType;
 }

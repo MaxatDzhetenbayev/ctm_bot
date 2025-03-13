@@ -17,7 +17,7 @@ export class ServicesService {
     private serviceRepository: typeof Service,
     @InjectModel(ManagerServices)
     private managerServicesRepository: typeof ManagerServices
-  ) {}
+  ) { }
 
   logger = new Logger(ServicesService.name);
 
@@ -39,9 +39,12 @@ export class ServicesService {
     }
   }
 
-  async findAll() {
+  async findAll(visitor_type_id?: number) {
+
+    const where = visitor_type_id ? { visitor_type_id } : {};
+
     try {
-      const services = await this.serviceRepository.findAll();
+      const services = await this.serviceRepository.findAll({ where });
 
       if (!services) {
         this.logger.error(`Ошибка при получении списка сервисов`);
