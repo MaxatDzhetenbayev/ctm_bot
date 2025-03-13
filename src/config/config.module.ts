@@ -8,8 +8,8 @@ import { Center } from 'src/general/centers/entities/center.entity'
 import { UsersCenter } from 'src/general/centers/entities/users_center.entity'
 import { Reception } from 'src/general/receptions/entities/reception.entity'
 import { ManagerServices } from 'src/general/services/entities/manager-services.entity'
+import { ServiceVisitorType } from 'src/general/services/entities/service-visitor.entity'
 import { Service } from 'src/general/services/entities/service.entity'
-import { VisitorType } from 'src/general/services/entities/visitor-type'
 import { ManagerTable } from 'src/general/users/entities/manager-table.entity'
 import { Profile } from 'src/general/users/entities/profile.entity'
 import { Role } from 'src/general/users/entities/role.entity'
@@ -54,8 +54,8 @@ const sessions = new LocalSession({ database: 'session_db.json' })
           Reception,
           ManagerTable,
           Status,
-          VisitorType,
-          VisitorTypesTable
+          VisitorTypesTable,
+          ServiceVisitorType
         ]
       })
     }),
@@ -78,4 +78,4 @@ const sessions = new LocalSession({ database: 'session_db.json' })
   ],
   exports: [SequelizeModule]
 })
-export class AppConfigModule { }
+export class AppConfigModule {}

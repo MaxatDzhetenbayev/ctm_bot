@@ -6,40 +6,36 @@ import {
   ForeignKey,
   HasMany,
   Model,
-  Table,
-} from "sequelize-typescript";
-import { ManagerServices } from "./manager-services.entity";
-import { User } from "src/general/users/entities/user.entity";
-import { VisitorType } from "./visitor-type";
+  Table
+} from 'sequelize-typescript'
+import { ManagerServices } from './manager-services.entity'
+import { User } from 'src/general/users/entities/user.entity'
+import { VisitorTypesTable } from 'src/general/users/entities/visitor_types.entity'
+import { ServiceVisitorType } from './service-visitor.entity'
 
 @Table({
-  tableName: "services",
-  timestamps: false,
+  tableName: 'services',
+  timestamps: false
 })
 export class Service extends Model<Service> {
   @Column({
-    type: DataType.JSONB,
+    type: DataType.JSONB
   })
-  name: Record<string, string>;
+  name: Record<string, string>
 
   @ForeignKey(() => Service)
   @Column
-  parent_id: number;
+  parent_id: number
 
-  @ForeignKey(() => VisitorType)
-  @Column
-  visitor_type_id: number;
+  @BelongsTo(() => Service, { as: 'parent' })
+  parent: Service
 
-  @BelongsTo(() => Service, { as: "parent" })
-  parent: Service;
-
-  @HasMany(() => Service, { foreignKey: "parent_id", as: "children" })
-  children: Service[];
+  @HasMany(() => Service, { foreignKey: 'parent_id', as: 'children' })
+  children: Service[]
 
   @BelongsToMany(() => User, () => ManagerServices)
-  users: User[];
+  users: User[]
 
-
-  @BelongsTo(() => VisitorType)
-  visitor_type: VisitorType;
+  @BelongsToMany(() => VisitorTypesTable, () => ServiceVisitorType)
+  visitor_type: VisitorTypesTable
 }
