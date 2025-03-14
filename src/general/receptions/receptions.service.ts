@@ -266,7 +266,10 @@ export class ReceptionsService {
             as: 'manager_works',
             required: false,
             where: {
-              date
+              date,
+              status_id: {
+                [sequelize.Op.not]: 5
+              }
             }
           }
         ]
@@ -281,8 +284,10 @@ export class ReceptionsService {
           })
         }
 
-        const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
+        console.log(bookedSlots)
 
+        const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
+        console.log(freeSlots)
         return {
           managerId: manager.id,
           freeSlots
