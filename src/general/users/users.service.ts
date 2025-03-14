@@ -30,7 +30,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -350,7 +350,7 @@ export class UsersService {
 
       await user.$add('centers', center_id, { transaction })
 
-      if (role !== RoleType.user) {
+      if (role == RoleType.manager) {
         await this.managerTableRepository.create(
           {
             manager_id: user.id,

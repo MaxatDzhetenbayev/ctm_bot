@@ -12,7 +12,7 @@ import {
   ValidateNested
 } from 'class-validator'
 import { AuthType } from '../entities/user.entity'
-import { RoleType } from '../entities/role.entity'
+import { Role, RoleType } from '../entities/role.entity'
 
 class ProfileDto {
   @IsOptional()
@@ -68,7 +68,9 @@ export class CreateUserDto {
   @IsNumber()
   table?: number
 
-  @ValidateIf(o => o.auth_type !== AuthType.telegram)
+  @ValidateIf(
+    o => o.auth_type !== AuthType.telegram && o.role !== RoleType.admin
+  )
   @IsNumber()
   cabinet?: number
 

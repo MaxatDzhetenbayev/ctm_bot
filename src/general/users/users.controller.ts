@@ -38,14 +38,15 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RolesGuard)
-  @Roles(RoleType.superadmin, RoleType.admin, RoleType.manager)
+  // @UseGuards(RolesGuard)
+  // @Roles(RoleType.superadmin, RoleType.admin, RoleType.manager)
   @Post()
   @ApiCreateUser()
   async create(@Body() body: CreateUserDto, @Req() req) {
     return this.usersService.createUser({
       dto: body,
-      creater_role: req.user.role
+      // !WARNING req.user.role
+      creater_role: null
     })
   }
 
