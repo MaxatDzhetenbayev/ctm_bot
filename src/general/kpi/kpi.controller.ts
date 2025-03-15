@@ -35,17 +35,6 @@ export class KpiController {
     return this.kpiService.getReceptionsPerWeekday(userId)
   }
 
-  // // Количество завершенных приемов за неделю (пн-пт) по центру админа
-  // @UseGuards(JwtAuthGuard, RolesGuard)
-  // // @Roles(RoleType.admin)
-  // @Get('center/weekday/completed')
-  // @ApiFindLastWeekdayByCenter()
-  // async findLastWeekdayByCenter(
-  //   @Req() req: RequestWithUser
-  // ): Promise<Record<number, Record<string, number>>> {
-  //   return this.kpiService.getReceptionsPerWeekdayByCenter(req.user.center_id)
-  // }
-
   @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(RoleType.admin)
   @Get('center/weekday/completed')
