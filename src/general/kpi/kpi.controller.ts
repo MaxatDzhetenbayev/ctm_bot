@@ -16,6 +16,7 @@ import {
   ApiGetSummaryById,
   ApiKpiTags
 } from './kpi.swagger'
+import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
 
 interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
@@ -26,27 +27,12 @@ interface RequestWithUser extends Request {
 export class KpiController {
   constructor(private readonly kpiService: KpiService) {}
 
-  // Количество завершенных приемов за неделю (пн-пт) авторизованного пользователя
+  // Количество завершенных приемов за неделю
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(RoleType.manager)
-  @Get('weekday/completed')
-  @ApiFindLastWeekday()
-  async findLastWeekday(
-    @Req() req: RequestWithUser
-  ): Promise<Record<string, number>> {
-    const managerId = req.user.id
-    return this.kpiService.getReceptionsPerWeekday(managerId)
-  }
-
-  // Количество завершенных приемов за неделю (пн-пт) по ID
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.admin)
-  @Get('id/:id/weekday/completed')
-  @ApiFindLastWeekdayById()
-  async findLastWeekdayById(
-    @Param('id') id: number
-  ): Promise<Record<string, number>> {
-    return this.kpiService.getReceptionsPerWeekday(id)
+  @Roles(RoleType.manager, RoleType.admin, RoleType.superadmin)
+  @Get(['users/me/weekday/completed', 'users/:id/weekday/completed'])
+  async findLastWeekday(@CurrentUserId() userId: number) {
+    return this.kpiService.getReceptionsPerWeekday(userId)
   }
 
   // // Количество завершенных приемов за неделю (пн-пт) по центру админа

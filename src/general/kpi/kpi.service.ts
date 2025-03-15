@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import * as moment from 'moment'
 import { Op } from 'sequelize'
+import { Sequelize } from 'sequelize-typescript'
 import { Reception } from 'src/general/receptions/entities/reception.entity'
 import { ManagerTable } from 'src/general/users/entities/manager-table.entity'
 
@@ -26,41 +27,37 @@ export class KpiService {
       currentDate.subtract(1, 'day')
     }
 
-    return weekdays
+    return weekdays.reverse()
   }
 
-  async getReceptionsPerWeekday(
-    managerId: number
-  ): Promise<Record<string, number>> {
+  async getReceptionsPerWeekday(managerId: number) {
     moment.locale('ru')
-    const today = moment().add(1, 'days')
-    const lastFiveWeekdays = this.getLastWeekdays(today)
+    const today = moment()
+    const dates = this.getLastWeekdays(today)
 
-    const dates = lastFiveWeekdays
-      .map(day => day.format('YYYY-MM-DD'))
-      .reverse()
-    const weekdays = lastFiveWeekdays.map(day => day.format('dd')).reverse()
-    // console.log(dates)
-    // console.log(weekdays)
-    const receptions = await this.receptionRepository.findAll({
+    const receptions = (await this.receptionRepository.findAll({
+      attributes: [
+        'date',
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'count']
+      ],
       where: {
         manager_id: managerId,
-        date: { [Op.in]: dates },
+        date: { [Op.in]: dates.map(day => day.format('YYYY-MM-DD')) },
         status_id: 4
-      }
-    })
+      },
+      group: ['date'],
+      raw: true
+    })) as unknown as { date: string; count: number }[]
 
-    const counts: Record<string, number> = {}
-    weekdays.forEach(weekday => (counts[weekday] = 0))
+    const result = receptions.reduce(
+      (acc, { date, count }) => ({
+        ...acc,
+        [moment(date).format('dd')]: Number(count)
+      }),
+      Object.fromEntries(dates.map(day => [day.format('dd'), 0]))
+    )
 
-    receptions.forEach(reception => {
-      const weekdayStr = moment(reception.date).format('dd')
-      if (counts[weekdayStr] !== undefined) {
-        counts[weekdayStr]++
-      }
-    })
-
-    return counts
+    return result
   }
 
   async getReceptionStatsPerWeekday(managerId: number) {
