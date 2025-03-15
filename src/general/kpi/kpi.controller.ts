@@ -1,14 +1,11 @@
 import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common'
-import { Request } from 'express'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/guards/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { RoleType } from '../users/entities/role.entity'
 import { KpiService } from './kpi.service'
 import {
-  ApiFindLastWeekday,
   ApiFindLastWeekdayByCenter,
-  ApiFindLastWeekdayById,
   ApiGetDailySummaryByCenter,
   ApiGetStats,
   ApiGetStatsByCenter,
@@ -16,9 +13,10 @@ import {
   ApiGetSummaryById,
   ApiKpiTags
 } from './kpi.swagger'
-import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
+// import { CurrentUserId } from '../auth/decorators/current-user-id.decorator'
+import { Request } from 'express'
 
-interface RequestWithUser extends Request {
+interface CustomRequest extends Request {
   user: { id: number; login: string; role: string; center_id: number }
 }
 
@@ -27,51 +25,31 @@ interface RequestWithUser extends Request {
 export class KpiController {
   constructor(private readonly kpiService: KpiService) {}
 
-  // Количество завершенных приемов за неделю
+  // Количество завершенных приемов менеджера за неделю
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.manager, RoleType.admin, RoleType.superadmin)
-  @Get(['users/me/weekday/completed', 'users/:id/weekday/completed'])
-  async findLastWeekday(@CurrentUserId() userId: number) {
-    return this.kpiService.getReceptionsPerWeekday(userId)
+  @Get([
+    'managers/me/weekday/repections/completed',
+    'managers/:id/weekday/repections/completed'
+  ])
+  async findLastWeekdayByManager(@Req() req: CustomRequest) {
+    const managerId = Number(req.params.id) || req.user.id
+    return this.kpiService.getReceptionsPerWeekday({ managerId })
   }
 
+  // Количество завершенных приемов центра за неделю
   @UseGuards(JwtAuthGuard, RolesGuard)
-  // @Roles(RoleType.admin)
-  @Get('center/weekday/completed')
+  @Roles(RoleType.admin, RoleType.superadmin)
+  @Get([
+    'centers/managers/weekday/receptions/completed',
+    'centers/:centerId/managers/weekday/receptions/completed'
+  ])
   @ApiFindLastWeekdayByCenter()
   async findLastWeekdayByCenter(
-    @Req() req: RequestWithUser
+    @Req() req: CustomRequest
   ): Promise<Record<string, number>> {
-    const stats = await this.kpiService.getReceptionsPerWeekdayByCenter(
-      req.user.center_id
-    )
-
-    if (!stats || Object.keys(stats).length === 0) {
-      return {}
-    }
-
-    const firstManagerKey = Object.keys(stats)[0]
-    if (!firstManagerKey || !stats[firstManagerKey]) {
-      return {}
-    }
-
-    const weekdays = Object.keys(stats[firstManagerKey])
-
-    const aggregatedStats: Record<string, number> = weekdays.reduce(
-      (acc, day) => {
-        acc[day] = 0
-        return acc
-      },
-      {} as Record<string, number>
-    )
-
-    Object.values(stats).forEach(managerStats => {
-      Object.entries(managerStats).forEach(([day, count]) => {
-        aggregatedStats[day] += count
-      })
-    })
-
-    return aggregatedStats
+    const centerId = Number(req.params.centerId) || req.user.center_id
+    return this.kpiService.getReceptionsPerWeekday({ centerId })
   }
 
   // Количество общих, завершенных и отказных приемов за неделю (пн-пт) авторизованного пользователя
@@ -80,7 +58,7 @@ export class KpiController {
   @Get('weekday/stats')
   @ApiGetStats()
   async getStats(
-    @Req() req: RequestWithUser
+    @Req() req: CustomRequest
   ): Promise<{ total: number; completed: number; declined: number }> {
     const managerId = req.user.id
     return this.kpiService.getReceptionStatsPerWeekday(managerId)
@@ -101,7 +79,7 @@ export class KpiController {
   // @Get('center/weekday/stats')
   // @ApiGetStatsByCenter()
   // async getStatsByCenter(
-  //   @Req() req: RequestWithUser
+  //   @Req() req: CustomRequest
   // ): Promise<
   //   Record<number, { total: number[]; completed: number[]; declined: number[] }>
   // > {
@@ -114,7 +92,7 @@ export class KpiController {
   @Get('center/weekday/stats')
   @ApiGetStatsByCenter()
   async getStatsByCenter(
-    @Req() req: RequestWithUser
+    @Req() req: CustomRequest
   ): Promise<{ total: number; completed: number; declined: number }> {
     const stats =
       await this.kpiService.getReceptionStatsPerWeekdayByAllManagers(
@@ -143,7 +121,7 @@ export class KpiController {
   @Roles(RoleType.manager)
   @Get('today/summary')
   @ApiGetSummary()
-  async getSummary(@Req() req: RequestWithUser): Promise<{
+  async getSummary(@Req() req: CustomRequest): Promise<{
     totalReceptions: number
     problematicRate: number
     averageRating: number
@@ -198,7 +176,7 @@ export class KpiController {
   // // @Roles(RoleType.admin)
   // @Get('center/today/summary')
   // @ApiGetDailySummaryByCenter()
-  // async getDailySummaryByCenter(@Req() req: RequestWithUser): Promise<
+  // async getDailySummaryByCenter(@Req() req: CustomRequest): Promise<
   //   Record<
   //     number,
   //     {
@@ -216,7 +194,7 @@ export class KpiController {
   // @Roles(RoleType.admin)
   @Get('center/today/summary')
   @ApiGetDailySummaryByCenter()
-  async getDailySummaryByCenter(@Req() req: RequestWithUser): Promise<{
+  async getDailySummaryByCenter(@Req() req: CustomRequest): Promise<{
     totalReceptions: number
     problematicRate: number
     averageRating: number

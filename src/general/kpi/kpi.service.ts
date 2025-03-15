@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import * as moment from 'moment'
-import { Op } from 'sequelize'
+import { FindOptions, Op } from 'sequelize'
 import { Sequelize } from 'sequelize-typescript'
 import { Reception } from 'src/general/receptions/entities/reception.entity'
 import { ManagerTable } from 'src/general/users/entities/manager-table.entity'
@@ -30,23 +30,37 @@ export class KpiService {
     return weekdays.reverse()
   }
 
-  async getReceptionsPerWeekday(managerId: number) {
+  async getReceptionsPerWeekday({
+    centerId,
+    managerId
+  }: {
+    managerId?: number
+    centerId?: number
+  }) {
     moment.locale('ru')
     const today = moment()
     const dates = this.getLastWeekdays(today)
 
-    const receptions = (await this.receptionRepository.findAll({
+    const options: FindOptions = {
       attributes: [
         'date',
         [Sequelize.fn('COUNT', Sequelize.col('*')), 'count']
       ],
       where: {
-        manager_id: managerId,
         date: { [Op.in]: dates.map(day => day.format('YYYY-MM-DD')) },
         status_id: 4
       },
       group: ['date'],
       raw: true
+    }
+    if (centerId) {
+      options.where['center_id'] = centerId
+    } else {
+      options.where['manager_id'] = managerId
+    }
+
+    const receptions = (await this.receptionRepository.findAll({
+      ...options
     })) as unknown as { date: string; count: number }[]
 
     const result = receptions.reduce(
