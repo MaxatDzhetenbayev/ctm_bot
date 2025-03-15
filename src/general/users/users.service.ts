@@ -364,17 +364,6 @@ export class UsersService {
         if (service_ids) {
           await user.$add('services', service_ids, { transaction })
         }
-
-        if (table) {
-          await this.managerTableRepository.create(
-            {
-              manager_id: user.id,
-              center_id,
-              table
-            },
-            { transaction }
-          )
-        }
       }
 
       await transaction.commit()
