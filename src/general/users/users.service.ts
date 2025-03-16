@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -10,13 +9,14 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
 import { FindOptions, Op } from 'sequelize'
-import { Sequelize, SequelizeOptions } from 'sequelize-typescript'
+import { Sequelize } from 'sequelize-typescript'
 import { Center } from '../centers/entities/center.entity'
 import { CreateUserDto } from './dto/create-user.dto'
 import { ManagerTable } from './entities/manager-table.entity'
 import { Profile } from './entities/profile.entity'
 import { Role, RoleType } from './entities/role.entity'
 import { AuthType, User } from './entities/user.entity'
+import { GetManagersDto } from './dto/get-managers.dto'
 
 @Injectable()
 export class UsersService {
@@ -139,29 +139,62 @@ export class UsersService {
     return user
   }
 
-  async getManagersByCenter(center_id: number) {
+  async getManagersByCenter(center_id: number, query: GetManagersDto) {
+    const { limit, page, search } = query
+    const offset = (page - 1) * limit
     try {
-      const managers = await this.managerTableRepository.findAll({
-        where: { center_id },
-        attributes: ['manager_id']
-      })
-
-      if (!managers.length) {
-        throw new NotFoundException('Менеджеры не найдены')
+      const options: FindOptions = {
+        limit,
+        offset,
+        where: { role_id: 3 },
+        include: [
+          {
+            model: Center,
+            where: {
+              id: center_id
+            },
+            attributes: [],
+            through: { attributes: [] }
+          }
+        ]
       }
 
-      const managerIds = managers.map(manager => manager.manager_id)
+      if (search) {
+        options.include = [
+          {
+            model: Profile,
+            where: {
+              full_name: {
+                [Op.iLike]: `%${search}%`
+              }
+            }
+          }
+        ]
+      }
+
+      const managers = await this.usersRepository.findAndCountAll(options)
+
+      if (!managers.rows.length) {
+        return []
+      }
+
+      const managerIds = managers.rows.map(manager => manager.id)
 
       const profiles = await this.profilesRepository.findAll({
         where: { id: managerIds },
-        attributes: ['id', 'full_name', 'iin', 'phone']
+        attributes: ['id', 'full_name', 'phone']
       })
 
       if (!profiles.length) {
         return []
       }
 
-      return profiles
+      return {
+        managers: profiles,
+        total: managers.count,
+        page,
+        totalPages: Math.ceil(managers.count / limit)
+      }
     } catch (error) {
       if (error instanceof HttpException) {
         throw error

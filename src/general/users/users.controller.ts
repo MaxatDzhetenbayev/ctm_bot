@@ -27,6 +27,7 @@ import {
   ApiUsersTags
 } from './users.swagger'
 import { UsersService } from './users.service'
+import { GetManagersDto } from './dto/get-managers.dto'
 
 interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
@@ -63,9 +64,12 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @Get('managers/center')
   @ApiGetManagersByCenter()
-  async getManagers(@Req() req: RequestWithUser) {
+  async getManagers(
+    @Req() req: RequestWithUser,
+    @Query() query: GetManagersDto
+  ) {
     const centerId = req.user.center_id
-    return this.usersService.getManagersByCenter(centerId)
+    return this.usersService.getManagersByCenter(centerId, query)
   }
 
   // Изменение информации о работнике по ID
