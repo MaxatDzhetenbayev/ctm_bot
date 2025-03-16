@@ -26,20 +26,6 @@ import {
 export class ReceptionsController {
   constructor(private readonly receptionsService: ReceptionsService) {}
 
-  //   @Post()
-  //   create(@Body() createReceptionDto: CreateReceptionDto) {
-  //     return this.receptionsService.create();
-  //   }
-
-  //   @ApiFindFreeTimeSlots()
-  //   @Get()
-  //   findFreeTimeSlots(
-  //     @Query("centerId") centerId: number,
-  //     @Query("serviceId") serviceId: number,
-  //     @Query("date") date: string
-  //   ) {
-  //     return this.receptionsService.findFreeTimeSlots(centerId, serviceId, date);
-  //   }
   @ApiCreateReception()
   @Post()
   create(
@@ -55,18 +41,11 @@ export class ReceptionsController {
     return this.receptionsService.choiceManager(body)
   }
 
-  //   @Get(":id")
-  //   findOne(@Param("id") id: string) {
-  //     return this.receptionsService.findOne(+id);
-  //   }
-
   @ApiFindAllReceptions()
   @UseGuards(RolesGuard)
   @Roles(RoleType.manager)
   @Get()
   findAll(@Req() req) {
-    // console.log(req.user);
-
     const id = req.user.id
 
     return this.receptionsService.findAll(id)
@@ -87,17 +66,4 @@ export class ReceptionsController {
   changeStatus(@Query('status') status: number, @Param('id') id: number) {
     return this.receptionsService.changeReceptionStatus(id, status)
   }
-
-  //   @Patch(":id")
-  //   update(
-  //     @Param("id") id: string,
-  //     @Body() updateReceptionDto: UpdateReceptionDto
-  //   ) {
-  //     return this.receptionsService.update(+id, updateReceptionDto);
-  //   }
-
-  //   @Delete(":id")
-  //   remove(@Param("id") id: string) {
-  //     return this.receptionsService.remove(+id);
-  //   }
 }

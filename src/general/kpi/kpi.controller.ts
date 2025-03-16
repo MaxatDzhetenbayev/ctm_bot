@@ -21,8 +21,8 @@ export class KpiController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleType.manager, RoleType.admin, RoleType.superadmin)
   @Get([
-    'managers/me/weekday/repections/completed',
-    'managers/:id/weekday/repections/completed'
+    'managers/me/weekday/receptions/completed',
+    'managers/:id/weekday/receptions/completed'
   ])
   async getLastWorkWeekdayCompletedReceptionsByManager(
     @Req() req: CustomRequest

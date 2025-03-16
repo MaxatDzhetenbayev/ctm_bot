@@ -36,7 +36,6 @@ export class KpiService {
     moment.locale('ru')
     const today = moment()
     const dates = this.getLastWeekdays(today)
-
     const options: FindOptions = {
       attributes: [
         'date',
@@ -58,7 +57,6 @@ export class KpiService {
     const receptions = (await this.receptionRepository.findAll({
       ...options
     })) as unknown as { date: string; count: number }[]
-
     const result = receptions.reduce(
       (acc, { date, count }) => ({
         ...acc,
@@ -79,26 +77,51 @@ export class KpiService {
   }) {
     const today = moment().format('YYYY-MM-DD')
 
+    const groupObject = managerId ? 'manager_id' : 'center_id'
+
     const options: FindOptions = {
       attributes: [
         [
-          fn('COUNT', literal('CASE WHEN status_id = 4 THEN 1 ELSE NULL END')),
+          fn(
+            'COALESCE',
+            fn(
+              'COUNT',
+              literal('CASE WHEN status_id = 4 THEN 1 ELSE NULL END')
+            ),
+            0
+          ),
           'completedReceptionsCount'
         ],
         [
-          fn('ROUND', fn('AVG', cast(col('rating'), 'DECIMAL')), 2),
+          fn(
+            'COALESCE',
+            fn('ROUND', fn('AVG', cast(col('rating'), 'DECIMAL')), 1),
+            0
+          ),
           'averageRating'
         ],
         [
-          fn('COUNT', literal('CASE WHEN rating < 4 THEN 1 ELSE NULL END')),
+          fn(
+            'COALESCE',
+            fn('COUNT', literal('CASE WHEN rating < 4 THEN 1 ELSE NULL END')),
+            0
+          ),
           'problematicRate'
         ],
-        [fn('ROUND', literal('(COUNT(*) * 1.0 / 32) * 100'), 2), 'managerLoad']
+        [
+          fn(
+            'COALESCE',
+            fn('ROUND', literal('(COUNT(*) * 1.0 / 32) * 100'), 1),
+            0
+          ),
+          'managerLoad'
+        ]
       ],
+
       where: {
         date: today
       },
-      group: ['manager_id']
+      group: [groupObject]
     }
 
     if (centerId) {
