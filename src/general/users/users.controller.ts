@@ -14,12 +14,9 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import * as path from 'path'
-import { Roles } from '../auth/guards/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CreateUserDto } from './dto/create-user.dto'
-import { RoleType } from './entities/role.entity'
 import {
-  ApiCreateManager,
   ApiCreateUser,
   ApiGetManagersByCenter,
   ApiGetProfile,
@@ -28,6 +25,7 @@ import {
 } from './users.swagger'
 import { UsersService } from './users.service'
 import { GetManagersDto } from './dto/get-managers.dto'
+import { UpdateManagerDto } from './dto/update-manager.dto'
 
 interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
@@ -80,8 +78,8 @@ export class UsersController {
   @ApiUpdateEmployee()
   async updateEmployee(
     @Param('id') employeeId: number,
-    @Body() updateData: { full_name?: string; iin?: string; phone?: string },
-    @Req() req
+    @Body() updateData: UpdateManagerDto,
+    @Req() req: RequestWithUser
   ) {
     return this.usersService.updateEmployeeById(
       employeeId,

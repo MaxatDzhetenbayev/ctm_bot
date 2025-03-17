@@ -17,6 +17,8 @@ import { Profile } from './entities/profile.entity'
 import { Role, RoleType } from './entities/role.entity'
 import { AuthType, User } from './entities/user.entity'
 import { GetManagersDto } from './dto/get-managers.dto'
+import { UpdateManagerDto } from './dto/update-manager.dto'
+import { Service } from '../services/entities/service.entity'
 
 @Injectable()
 export class UsersService {
@@ -205,61 +207,72 @@ export class UsersService {
 
   async updateEmployeeById(
     employeeId: number,
-    updateData: { full_name?: string; iin?: string; phone?: string },
-    user: User
+    updateData: UpdateManagerDto,
+    user: { id: number; login: string; role: string; center_id: number }
   ) {
     try {
-      const userWithCenters = await this.usersRepository.findOne({
-        where: { id: user.id },
-        include: [{ model: Center, through: { attributes: [] } }]
-      })
-
-      if (!userWithCenters || !userWithCenters.centers.length) {
-        throw new BadRequestException('У вас нет привязанного центра')
-      }
-
-      console.log('📌 Центры пользователя:', userWithCenters.centers)
-
-      const centerId = userWithCenters.centers[0].id
-      console.log('📌 Работаем с центром:', centerId)
-
-      const profile = await this.profilesRepository.findOne({
+      const manager = await this.usersRepository.findOne({
         where: { id: employeeId },
+        attributes: {
+          exclude: [
+            'auth_type',
+            'telegram_id',
+            'password_hash',
+            'role_id',
+            'visitor_type_id'
+          ]
+        },
         include: [
           {
-            model: User,
-            include: [
-              {
-                model: Center,
-                through: { attributes: [] },
-                where: { id: centerId }
-              }
-            ]
+            model: Center,
+            through: { attributes: [] },
+            where: { id: user.center_id }
+          },
+          {
+            model: Profile,
+            as: 'profile'
+          },
+          {
+            model: ManagerTable,
+            as: 'manager_table'
+          },
+          {
+            model: Service,
+            as: 'services',
+            through: {
+              attributes: []
+            }
           }
         ]
       })
 
-      if (!profile) {
+      if (!manager) {
         throw new NotFoundException(
           'Работник не найден или не относится к вашему центру'
         )
       }
+      const { profile, table, cabinet, service_ids, ...main } = updateData
 
-      console.log('📌 Найденный работник:', profile)
+      await manager.update(main)
 
-      await profile.update({
-        full_name: updateData.full_name ?? profile.full_name,
-        iin: updateData.iin ?? profile.iin,
-        phone: updateData.phone ?? profile.phone
+      await manager.profile.update(profile)
+
+      await manager.manager_table.update({
+        table,
+        cabinet
       })
 
-      console.log('📌 Обновленный профиль:', profile)
+      console.log(service_ids)
+      if (service_ids) {
+        await manager.$set('services', service_ids)
+      }
 
-      return profile
+      return manager
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
       }
+      console.log(error)
       throw new InternalServerErrorException(
         'Ошибка при обновлении информации о работнике'
       )
