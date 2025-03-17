@@ -15,7 +15,7 @@ interface CustomRequest extends Request {
 @ApiKpiTags()
 @Controller('kpi')
 export class KpiController {
-  constructor(private readonly kpiService: KpiService) {}
+  constructor(private readonly kpiService: KpiService) { }
 
   // Количество завершенных приемов менеджера за неделю
   @UseGuards(JwtAuthGuard, RolesGuard)

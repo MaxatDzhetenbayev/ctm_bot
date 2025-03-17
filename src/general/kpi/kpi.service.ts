@@ -10,12 +10,11 @@ export class KpiService {
   constructor(
     @InjectModel(Reception)
     private readonly receptionRepository: typeof Reception
-  ) {}
+  ) { }
 
   private getLastWeekdays(startDate: moment.Moment): moment.Moment[] {
     const weekdays = []
-    let currentDate = startDate.clone().subtract(1, 'day')
-
+    let currentDate = startDate
     while (weekdays.length < 5) {
       if (currentDate.day() !== 6 && currentDate.day() !== 0) {
         weekdays.push(currentDate.clone())

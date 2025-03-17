@@ -45,7 +45,6 @@ export class BotServicesService {
       await this.getChoiceDatePropmpt(ctx)
       return
     }
-    console.log(service.children)
 
     const keyboardServices = service.children.map(subService => [
       {
