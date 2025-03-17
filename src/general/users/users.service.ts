@@ -36,11 +36,17 @@ export class UsersService {
 
   private readonly logger = new Logger(this.usersRepository.name)
 
-  async getManager(managerId: number) {
+  async getManager(
+    managerId: number,
+    user: { id: number; login: string; role: string; center_id: number }
+  ) {
     try {
       const manager = await this.usersRepository.findOne({
         where: {
           id: managerId
+        },
+        attributes: {
+          exclude: ['password_hash']
         },
         include: [
           {
@@ -49,8 +55,24 @@ export class UsersService {
             attributes: ['name']
           },
           {
+            model: Center,
+            through: { attributes: [] },
+            where: { id: user.center_id }
+          },
+          {
             model: Profile,
-            attributes: ['full_name', 'iin', 'phone']
+            as: 'profile'
+          },
+          {
+            model: ManagerTable,
+            as: 'manager_table'
+          },
+          {
+            model: Service,
+            as: 'services',
+            through: {
+              attributes: []
+            }
           }
         ]
       })
@@ -73,7 +95,11 @@ export class UsersService {
     }
   }
 
-  async getProfileUser({ login }: { login: string }) {
+  async getProfileUser({
+    user: { login, center_id }
+  }: {
+    user: { id: number; login: string; role: string; center_id: number }
+  }) {
     try {
       const user = await this.validateUserByLogin(login)
       if (!user) {
@@ -96,7 +122,8 @@ export class UsersService {
       return {
         userLogin,
         role: role.name,
-        full_name
+        full_name,
+        center_id
       }
     } catch (error) {
       if (error instanceof HttpException) {

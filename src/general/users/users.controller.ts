@@ -27,7 +27,7 @@ import { UsersService } from './users.service'
 import { GetManagersDto } from './dto/get-managers.dto'
 import { UpdateManagerDto } from './dto/update-manager.dto'
 
-interface RequestWithUser extends Request {
+export interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
 }
 
@@ -52,9 +52,9 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @Get('profile')
   @ApiGetProfile()
-  async getProfile(@Req() req) {
+  async getProfile(@Req() req: RequestWithUser) {
     return this.usersService.getProfileUser({
-      login: req.user.login
+      user: req.user
     })
   }
 
@@ -91,9 +91,10 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
   @Get('managers/:id')
-  async getManagerById(@Param('id') id: number) {
-    return this.usersService.getManager(id)
+  async getManagerById(@Param('id') id: number, @Req() req: RequestWithUser) {
+    return this.usersService.getManager(id, req.user)
   }
+
   @Get('openapi')
   getJsonSpec(@Res() res: Response) {
     const filePath = path.resolve('./swagger-spec.json')
