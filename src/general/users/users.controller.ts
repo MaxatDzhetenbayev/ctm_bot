@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -26,6 +27,8 @@ import {
 import { UsersService } from './users.service'
 import { GetManagersDto } from './dto/get-managers.dto'
 import { UpdateManagerDto } from './dto/update-manager.dto'
+import { RoleType } from './entities/role.entity'
+import { Roles } from '../auth/guards/roles.decorator'
 
 export interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
@@ -34,7 +37,7 @@ export interface RequestWithUser extends Request {
 @ApiUsersTags()
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @HttpCode(HttpStatus.CREATED)
   // @UseGuards(RolesGuard)
@@ -88,6 +91,13 @@ export class UsersController {
     )
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.admin, RoleType.superadmin)
+  @HttpCode(HttpStatus.OK)
+  @Delete('managers/:id')
+  async deleteManager(@Param('id') id: number, @Req() req: RequestWithUser) {
+    return this.usersService.deleteManager(id, req.user.center_id)
+  }
   @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
   @Get('managers/:id')

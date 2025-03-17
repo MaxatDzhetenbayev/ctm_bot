@@ -8,7 +8,7 @@ import {
   NotFoundException
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { FindOptions, Op } from 'sequelize'
+import { FindOptions, Op, where } from 'sequelize'
 import { Sequelize } from 'sequelize-typescript'
 import { Center } from '../centers/entities/center.entity'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -32,7 +32,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -455,6 +455,40 @@ export class UsersService {
       }
 
       throw new InternalServerErrorException('Ошибка при создании пользователя')
+    }
+  }
+
+
+  async deleteManager(manager_id: number, center_id: number) {
+    try {
+      const managerCandidate = await this.usersRepository.findOne({
+        where: {
+          id: manager_id,
+          role_id: 3
+        },
+        include: [
+          {
+            model: Center,
+            where: {
+              id: center_id
+            },
+            through: {
+              attributes: []
+            }
+          }
+        ]
+      })
+
+      if (!managerCandidate) {
+        new NotFoundException('Менеджер не найден')
+      }
+      return await managerCandidate.destroy()
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException('Ошибка при удалении пользователя')
     }
   }
 }
