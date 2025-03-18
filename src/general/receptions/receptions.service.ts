@@ -16,6 +16,7 @@ import { Service } from '../services/entities/service.entity'
 import { Role } from 'src/general/users/entities/role.entity'
 import { Profile } from '../users/entities/profile.entity'
 import { Status } from 'src/status/entities/status.entity'
+import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
 
 @Injectable()
 export class ReceptionsService {
@@ -25,16 +26,18 @@ export class ReceptionsService {
     @InjectModel(User)
     private userRepository: typeof User,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   logger = new Logger(ReceptionsService.name)
+
 
   async create(body: {
     user_id: number
     manager_id: number
     date: string
     time: string
-    status_id: number
+    status_id: number,
+
   }) {
     try {
       const reception = await this.receptionRepository.create(body)
@@ -158,6 +161,10 @@ export class ReceptionsService {
               {
                 model: Profile,
                 attributes: ['iin', 'full_name', 'phone']
+              },
+              {
+                model: VisitorTypesTable,
+                attributes: ["name"]
               }
             ]
           },
@@ -407,13 +414,15 @@ export class ReceptionsService {
         throw new InternalServerErrorException('Нет свободных менеджеров')
       }
 
+      console.log(center_id)
       const reception = await this.receptionRepository.create({
         user_id,
         manager_id: leastBusyManager.id,
         service_id: service_id,
         status_id: 2,
         date,
-        time
+        time,
+        center_id: center_id
       })
 
       if (!reception) {
@@ -438,6 +447,46 @@ export class ReceptionsService {
     } catch (error) {
       this.logger.error(`Ошибка при выборе менеджера: ${error}`)
       throw new InternalServerErrorException('Ошибка при выборе менеджера')
+    }
+  }
+
+  async getAllByManagerId(manager_id: number) {
+    try {
+      const managerReceptions = await this.receptionRepository.findAll({
+        attributes: ['id', 'date', 'time', 'rating'],
+        where: {
+          manager_id
+        },
+        order: [['date', 'DESC'], ['time', 'DESC']],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id'],
+            required: true,
+            include: [
+              {
+                model: Profile,
+                attributes: ['iin', 'full_name', 'phone']
+              },
+            ]
+          },
+          {
+            model: Status,
+            attributes: ['name']
+          },
+        ]
+      })
+
+      if (!managerReceptions.length) {
+        return []
+      }
+
+      return managerReceptions
+
+    } catch (error) {
+      this.logger.error(`Ошибка при выборе записей менеджера: ${error}`)
+      throw new InternalServerErrorException('Ошибка при выборе записей менеджера')
     }
   }
 }

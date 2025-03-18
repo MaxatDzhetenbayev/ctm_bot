@@ -24,7 +24,7 @@ import {
 @ApiReceptionsTags()
 @Controller('receptions')
 export class ReceptionsController {
-  constructor(private readonly receptionsService: ReceptionsService) {}
+  constructor(private readonly receptionsService: ReceptionsService) { }
 
   @ApiCreateReception()
   @Post()
@@ -47,13 +47,19 @@ export class ReceptionsController {
   @Get()
   findAll(@Req() req) {
     const id = req.user.id
-
     return this.receptionsService.findAll(id)
+  }
+
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.admin, RoleType.superadmin)
+  @Get('managers/:manager_id')
+  findAllByManager(@Param('manager_id') manager_id: number) {
+    return this.receptionsService.getAllByManagerId(manager_id)
   }
 
   @ApiFindReceptionById()
   @UseGuards(RolesGuard)
-  @Roles(RoleType.manager)
+  @Roles(RoleType.manager, RoleType.admin, RoleType.superadmin)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.receptionsService.findOne(+id)
