@@ -8,7 +8,7 @@ import {
   NotFoundException
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/sequelize'
-import { FindOptions, Op, where } from 'sequelize'
+import { FindOptions, Op } from 'sequelize'
 import { Sequelize } from 'sequelize-typescript'
 import { Center } from '../centers/entities/center.entity'
 import { CreateUserDto } from './dto/create-user.dto'
@@ -32,7 +32,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -41,7 +41,7 @@ export class UsersService {
     user: { id: number; login: string; role: string; center_id: number }
   ) {
     try {
-      const manager = await this.usersRepository.findOne({
+      const manager = await this.usersRepository.scope('withProfile').findOne({
         where: {
           id: managerId
         },
@@ -59,10 +59,7 @@ export class UsersService {
             through: { attributes: [] },
             where: { id: user.center_id }
           },
-          {
-            model: Profile,
-            as: 'profile'
-          },
+
           {
             model: ManagerTable,
             as: 'manager_table'
@@ -289,7 +286,6 @@ export class UsersService {
         cabinet
       })
 
-      console.log(service_ids)
       if (service_ids) {
         await manager.$set('services', service_ids)
       }
@@ -454,7 +450,6 @@ export class UsersService {
       throw new InternalServerErrorException('Ошибка при создании пользователя')
     }
   }
-
 
   async deleteManager(manager_id: number, center_id: number) {
     try {
