@@ -18,7 +18,7 @@ export class ServicesService {
     private serviceRepository: typeof Service,
     @InjectModel(ManagerServices)
     private managerServicesRepository: typeof ManagerServices
-  ) {}
+  ) { }
 
   logger = new Logger(ServicesService.name)
 
@@ -53,7 +53,6 @@ export class ServicesService {
         ]
       })
 
-      console.log(services)
 
       if (!services.length) {
         this.logger.error(`Ошибка при получении списка сервисов`)
@@ -101,6 +100,38 @@ export class ServicesService {
     } catch (error) {
       this.logger.error(`Ошибка при получении сервиса: ${error}`)
       new InternalServerErrorException('Ошибка при получении сервиса')
+    }
+  }
+
+  async getManagerServices(user: { id: number; login: string; role: string; center_id: number }) {
+
+    try {
+      const managerServicesCandidate = await this.managerServicesRepository.findAll({
+        where: {
+          manager_id: user.id
+        },
+
+      })
+
+      if (!managerServicesCandidate.length) {
+        return []
+      }
+
+      const servicesIds = managerServicesCandidate.map((service) => service.service_id)
+
+      const managerServices = this.serviceRepository.findAll({
+        attributes: {
+          exclude: ['parent_id']
+        },
+        where: {
+          id: servicesIds
+        }
+      })
+
+      return managerServices
+    } catch (error) {
+      this.logger.error(`Ошибка при получении сервисов менеджера: ${error}`)
+      new InternalServerErrorException('Ошибка при получении сервисов менеджера')
     }
   }
 

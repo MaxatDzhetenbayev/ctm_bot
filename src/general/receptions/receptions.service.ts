@@ -79,7 +79,6 @@ export class ReceptionsService {
         ],
         order: [['time', 'ASC']]
       })
-      // console.log(receptions)
       return receptions
     } catch (error) {
       throw new InternalServerErrorException(
@@ -292,10 +291,8 @@ export class ReceptionsService {
           })
         }
 
-        console.log(bookedSlots)
 
         const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
-        console.log(freeSlots)
         return {
           managerId: manager.id,
           freeSlots
