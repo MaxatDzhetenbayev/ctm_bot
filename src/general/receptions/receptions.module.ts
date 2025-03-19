@@ -8,6 +8,7 @@ import { Center } from "../centers/entities/center.entity";
 import { Service } from "../services/entities/service.entity";
 import { Role } from "src/general/users/entities/role.entity";
 import { Status } from "src/status/entities/status.entity";
+import { UsersModule } from "../users/users.module";
 
 @Module({
   controllers: [ReceptionsController],
@@ -21,7 +22,8 @@ import { Status } from "src/status/entities/status.entity";
       Service,
       Status,
     ]),
+    UsersModule
   ],
   exports: [ReceptionsService],
 })
-export class ReceptionsModule {}
+export class ReceptionsModule { }

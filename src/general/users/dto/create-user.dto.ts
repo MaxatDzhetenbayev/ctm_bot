@@ -37,7 +37,7 @@ export class CreateUserDto {
 
   @ValidateIf(o => o.auth_type === AuthType.telegram)
   @IsString()
-  telegram_id: string
+  telegram_id?: string
 
   @ValidateIf(o => o.auth_type === AuthType.telegram)
   @IsString()

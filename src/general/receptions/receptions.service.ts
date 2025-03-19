@@ -11,12 +11,13 @@ import * as moment from 'moment'
 
 import { Center } from '../centers/entities/center.entity'
 import { Reception } from './entities/reception.entity'
-import { User } from 'src/general/users/entities/user.entity'
+import { AuthType, User } from 'src/general/users/entities/user.entity'
 import { Service } from '../services/entities/service.entity'
-import { Role } from 'src/general/users/entities/role.entity'
+import { Role, RoleType } from 'src/general/users/entities/role.entity'
 import { Profile } from '../users/entities/profile.entity'
 import { Status } from 'src/status/entities/status.entity'
 import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
+import { UsersService } from '../users/users.service'
 
 @Injectable()
 export class ReceptionsService {
@@ -25,7 +26,8 @@ export class ReceptionsService {
     private receptionRepository: typeof Reception,
     @InjectModel(User)
     private userRepository: typeof User,
-    private readonly sequelize: Sequelize
+    private readonly sequelize: Sequelize,
+    private readonly userService: UsersService
   ) { }
 
   logger = new Logger(ReceptionsService.name)
@@ -236,7 +238,6 @@ export class ReceptionsService {
         '11:30',
         '12:00',
         '12:30',
-        '14:00',
         '14:30',
         '15:00',
         '15:30',
@@ -414,7 +415,6 @@ export class ReceptionsService {
         throw new InternalServerErrorException('Нет свободных менеджеров')
       }
 
-      console.log(center_id)
       const reception = await this.receptionRepository.create({
         user_id,
         manager_id: leastBusyManager.id,
@@ -448,6 +448,47 @@ export class ReceptionsService {
       this.logger.error(`Ошибка при выборе менеджера: ${error}`)
       throw new InternalServerErrorException('Ошибка при выборе менеджера')
     }
+  }
+
+
+  async createOffLiineReceptions(body: { visitor_type_id: number; full_name: string; iin: string; phone: string; time: string; service_id: number }, manager: { id: number; login: string; role: string; center_id: number }) {
+
+    const currentDate = moment().format('YYYY-MM-DD')
+    const { time, service_id, visitor_type_id, ...profile } = body
+
+
+    try {
+      const createdUser = await this.userService.createUser({
+        dto: {
+          profile: profile,
+          auth_type: AuthType.offline,
+          role: RoleType.user,
+          visitor_type: visitor_type_id,
+        }
+      })
+
+      const reception = await this.receptionRepository.create({
+        user_id: createdUser.id,
+        manager_id: manager.id,
+        service_id: service_id,
+        status_id: 2,
+        date: currentDate,
+        time,
+        center_id: manager.center_id
+      })
+
+      if (!reception) {
+        throw new InternalServerErrorException('Не удалось создать запись')
+      }
+
+      return reception
+
+    } catch (error) {
+
+      console.log(error)
+      throw new InternalServerErrorException('Не удалось создать запись')
+    }
+
   }
 
   async getAllByManagerId(manager_id: number) {

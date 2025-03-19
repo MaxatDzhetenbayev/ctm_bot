@@ -21,6 +21,11 @@ import {
   ApiReceptionsTags
 } from './receptions.swagger'
 
+
+interface CustomRequest extends Request {
+  user: { id: number; login: string; role: string; center_id: number }
+}
+
 @ApiReceptionsTags()
 @Controller('receptions')
 export class ReceptionsController {
@@ -39,6 +44,25 @@ export class ReceptionsController {
     }
   ) {
     return this.receptionsService.choiceManager(body)
+  }
+
+
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.manager)
+  @Post('offline')
+  createOffline(
+    @Body()
+    body: {
+      visitor_type_id: number,
+      full_name: string,
+      iin: string,
+      phone: string,
+      time: string
+      service_id: number
+    },
+    @Req() req: CustomRequest
+  ) {
+    return this.receptionsService.createOffLiineReceptions(body, req.user)
   }
 
   @ApiFindAllReceptions()

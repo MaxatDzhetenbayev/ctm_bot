@@ -441,10 +441,7 @@ export class UsersService {
 
       await transaction.commit()
 
-      return {
-        message: 'Пользователь успешно создан',
-        statusCode: 201
-      }
+      return user
     } catch (error) {
       await transaction.rollback()
 
