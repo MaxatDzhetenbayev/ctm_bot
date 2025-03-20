@@ -1,55 +1,87 @@
 import { Context } from 'vm'
-import { Action, Command, Ctx, On, Start, Update } from 'nestjs-telegraf'
+import { Action, Command, Ctx, Start, Update } from 'nestjs-telegraf'
 
 import { UsersService } from 'src/general/users/users.service'
 import { BotCentersService } from '../bot_centers/bot_centers.service'
 import { BotAuthService } from '../bot_auth/bot_auth.service'
-
-import { AuthType } from 'src/general/users/entities/user.entity'
-import { RegistrationContext } from '../bot_auth/bot-auth.controller'
+import { BotLanguageService } from '../bot_language/bot_language.service'
+import { ReceptionsService } from 'src/general/receptions/receptions.service'
 
 @Update()
 export class BotAppController {
   constructor(
     private readonly userService: UsersService,
     private readonly botAuthService: BotAuthService,
-    private readonly botCenterService: BotCentersService
+    private readonly botCenterService: BotCentersService,
+    private readonly botLanguageService: BotLanguageService,
+    private readonly receptionsService: ReceptionsService
   ) {}
-
-  private async showLangKeyboard(ctx: Context) {
-    const keyboardLang = [
-      [
-        { text: 'Русский', callback_data: 'set_language_ru' },
-        { text: 'Қазақша', callback_data: 'set_language_kz' }
-      ]
-    ]
-
-    await ctx.reply('Выберите язык', {
-      reply_markup: { inline_keyboard: keyboardLang }
-    })
-  }
 
   @Start()
   async onStart(@Ctx() ctx: Context) {
-    await this.showLangKeyboard(ctx)
+    if (ctx.session.language) {
+      await this.processAfterLanguageSelection(ctx, ctx.session.language)
+    } else {
+      await this.botLanguageService.showLangKeyboard(ctx)
+    }
   }
 
   @Command('service')
   async showCentersComand(@Ctx() ctx: Context) {
-    await this.botCenterService.showCenters(ctx, ctx.session.language)
+    await this.processAfterLanguageSelection(ctx, ctx.session.language)
   }
+  @Command('receptions')
+  async getMyReceptions(@Ctx() ctx: Context) {
+    const chatId = String(ctx.chat?.id)
+    const lang = ctx.session.language
+
+    const receptions = await this.receptionsService.findByUserTelegramId(chatId)
+
+    if (receptions.length === 0) {
+      await ctx.reply('У вас пока нет записей')
+    } else {
+      for (const reception of receptions) {
+        const { date, time, manager, status, service } = reception
+        await ctx.reply(
+          `Услуга: ${service.name[lang]}
+					\nДата: ${date}
+					\nВремя: ${time}
+					\nСтатус: ${this.normalizeStatus(status.name)}
+					\nМенеджер: ${manager.profile.full_name}
+					`,
+          {
+            reply_markup:
+              status.name === 'pending'
+                ? {
+                    inline_keyboard: [
+                      [
+                        {
+                          text: 'Отменить',
+                          callback_data: `cancel_${reception.id}`
+                        }
+                      ]
+                    ]
+                  }
+                : {}
+          }
+        )
+      }
+    }
+  }
+
   @Command('language')
   async choiceLang(@Ctx() ctx: Context) {
-    await this.showLangKeyboard(ctx)
+    await this.botLanguageService.showLangKeyboard(ctx)
   }
 
   @Action(/set_language_(.+)/)
   async setLanguage(@Ctx() ctx: Context) {
-    if (ctx.callbackQuery?.message) {
-      await ctx.deleteMessage()
-    }
-    const language = ctx.match[1]
-    ctx.session.language = language
+    const language = await this.botLanguageService.setLanguage(ctx)
+    await this.processAfterLanguageSelection(ctx, language)
+  }
+
+  async processAfterLanguageSelection(ctx: Context, language: string) {
+    await ctx.deleteMessage()
 
     const chatId = String(ctx.chat?.id)
     const user = await this.userService.validateUserByTelegram(chatId)
@@ -61,41 +93,18 @@ export class BotAppController {
     }
   }
 
-  @Action('registration')
-  async onRegistration(@Ctx() ctx: Context) {
-    if (ctx.callbackQuery?.message) {
-      await ctx.deleteMessage()
-    }
-    const language = ctx.session.language
-
-    ctx.session.registrationStep = 'full_name'
-    await ctx.reply(this.botAuthService.getStepPrompt('full_name', language))
-  }
-
-  @On('text')
-  async onText(@Ctx() ctx: RegistrationContext) {
-    const { registrationStep } = ctx.session
-    if (!registrationStep) return
-
-    const nextStep = await this.botAuthService.handleRegistrationStep(ctx)
-    if (nextStep) {
-      ctx.session.registrationStep = nextStep
-      await ctx.reply(
-        this.botAuthService.getStepPrompt(nextStep, ctx.session.language)
-      )
-    } else {
-      ctx.session.registrationStep = undefined
-      const { full_name, iin, phone } = ctx.session
-
-      await this.userService.createUserByTelegram({
-        full_name,
-        iin,
-        phone,
-        telegram_id: ctx.chat?.id,
-        auth_type: AuthType.telegram
-      })
-
-      await this.botCenterService.showCenters(ctx, ctx.session.language)
+  private normalizeStatus(status?: string) {
+    switch (status) {
+      case 'pending':
+        return 'На ожидании'
+      case 'working':
+        return 'В работе'
+      case 'done':
+        return 'Завершен'
+      case 'canceled':
+        return 'Отменен'
+      default:
+        return 'Ошибка'
     }
   }
 }

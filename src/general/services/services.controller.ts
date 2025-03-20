@@ -5,7 +5,9 @@ import {
   Get,
   Param,
   Patch,
-  Post
+  Post,
+  Req,
+  UseGuards
 } from '@nestjs/common'
 import { CreateServiceDto } from './dto/create-service.dto'
 import { UpdateServiceDto } from './dto/update-service.dto'
@@ -18,11 +20,18 @@ import {
   ApiServicesTags,
   ApiUpdateService
 } from './services.swagger'
+import { RolesGuard } from '../auth/guards/roles.guard'
+import { RoleType } from '../users/entities/role.entity'
+import { Roles } from '../auth/guards/roles.decorator'
+
+interface CustomRequest extends Request {
+  user: { id: number; login: string; role: string; center_id: number }
+}
 
 @ApiServicesTags()
 @Controller('services')
 export class ServicesController {
-  constructor(private readonly servicesService: ServicesService) {}
+  constructor(private readonly servicesService: ServicesService) { }
 
   @ApiCreateService()
   @Post()
@@ -36,11 +45,20 @@ export class ServicesController {
     return this.servicesService.findAll()
   }
 
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.manager)
+  @Get('manager')
+  findManagerServices(@Req() req: CustomRequest) {
+    return this.servicesService.getManagerServices(req.user)
+  }
+
   @ApiFindServiceById()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.servicesService.findOne(+id)
   }
+
+
 
   @ApiUpdateService()
   @Patch(':id')

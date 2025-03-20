@@ -8,11 +8,13 @@ import { Center } from 'src/general/centers/entities/center.entity'
 import { UsersCenter } from 'src/general/centers/entities/users_center.entity'
 import { Reception } from 'src/general/receptions/entities/reception.entity'
 import { ManagerServices } from 'src/general/services/entities/manager-services.entity'
+import { ServiceVisitorType } from 'src/general/services/entities/service-visitor.entity'
 import { Service } from 'src/general/services/entities/service.entity'
 import { ManagerTable } from 'src/general/users/entities/manager-table.entity'
 import { Profile } from 'src/general/users/entities/profile.entity'
 import { Role } from 'src/general/users/entities/role.entity'
 import { User } from 'src/general/users/entities/user.entity'
+import { VisitorTypesTable } from 'src/general/users/entities/visitor_types.entity'
 import { Status } from 'src/status/entities/status.entity'
 import * as LocalSession from 'telegraf-session-local'
 
@@ -51,7 +53,9 @@ const sessions = new LocalSession({ database: 'session_db.json' })
           ManagerServices,
           Reception,
           ManagerTable,
-          Status
+          Status,
+          VisitorTypesTable,
+          ServiceVisitorType
         ]
       })
     }),

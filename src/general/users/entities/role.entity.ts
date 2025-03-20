@@ -1,21 +1,22 @@
-import { Column, HasMany, Model, Table } from "sequelize-typescript";
-import { User } from "./user.entity";
+import { Column, HasMany, Model, Table } from 'sequelize-typescript'
+import { User } from './user.entity'
 
 export enum RoleType {
-  admin = "admin",
-  hr = "hr",
-  manager = "manager",
-  user = "user",
+  superadmin = 'superadmin',
+  admin = 'admin',
+  hr = 'hr',
+  manager = 'manager',
+  user = 'user'
 }
 
 @Table({
-  tableName: "roles",
-  timestamps: false,
+  tableName: 'roles',
+  timestamps: false
 })
 export class Role extends Model<Role> {
   @Column
-  name: RoleType;
+  name: RoleType
 
   @HasMany(() => User)
-  users: User[];
+  users: User[]
 }

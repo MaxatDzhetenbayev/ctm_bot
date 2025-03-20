@@ -52,6 +52,13 @@ export class Reception extends Model {
   })
   service_id: number
 
+  @ForeignKey(() => Service)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false
+  })
+  center_id: number
+
   @Column({
     type: DataType.INTEGER,
     allowNull: true

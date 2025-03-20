@@ -4,6 +4,7 @@ import { Action, Ctx, Update } from 'nestjs-telegraf'
 import { Context } from 'vm'
 import { ReceptionsService } from 'src/general/receptions/receptions.service'
 import { UsersService } from 'src/general/users/users.service'
+import { message } from 'src/config/translations'
 
 @Update()
 export class BotServicesController {
@@ -11,7 +12,7 @@ export class BotServicesController {
     private readonly botServicesService: BotServicesService,
     private readonly receptionsService: ReceptionsService,
     private readonly userService: UsersService
-  ) { }
+  ) {}
 
   @Action(/services_(.+)/)
   async onServices(@Ctx() ctx: Context) {
@@ -45,16 +46,32 @@ export class BotServicesController {
     if (ctx.callbackQuery?.message) {
       await ctx.deleteMessage()
     }
+
     const lang = ctx.session.language
     const selectedDate = ctx.match[1]
-    const formattedDate = moment.utc(selectedDate).startOf('day').toISOString()
+    const formattedDate = moment.utc(selectedDate).format('YYYY-MM-DD')
     ctx.session.date = formattedDate
+
+    if (ctx.session.noSlotsMessageId) {
+      await ctx.telegram
+        .deleteMessage(ctx.chat.id, ctx.session.noSlotsMessageId)
+        .catch(() => {})
+      ctx.session.noSlotsMessageId = null
+    }
 
     const timeSlots = await this.receptionsService.findFreeTimeSlots(
       ctx.session.centerId,
       ctx.session.serviceId,
       ctx.session.date
     )
+
+    if (timeSlots.length === 0) {
+      const noSlotsMessage = await ctx.reply(message[lang].noSlots)
+
+      this.botServicesService.getChoiceDatePropmpt(ctx)
+      ctx.session.noSlotsMessageId = noSlotsMessage.message_id
+      return
+    }
 
     const keyboard = []
     for (let i = 0; i < timeSlots.length; i += 4) {
@@ -66,12 +83,7 @@ export class BotServicesController {
       )
     }
 
-    const message = {
-      ru: 'Выберите время на дату',
-      kz: 'Келу уақытын таңдаңыз'
-    }
-
-    await ctx.reply(`${message[lang]}: ${selectedDate}`, {
+    await ctx.reply(`${message[lang].choice_time}: ${selectedDate}`, {
       reply_markup: {
         inline_keyboard: keyboard
       }
@@ -89,45 +101,27 @@ export class BotServicesController {
 
     const center = ctx.session.centerId
 
-    const message = {
-      ru: {
-        data: 'Ваши данные для записи',
-        date: 'Дата',
-        time: 'Время',
-        iin: 'ИИН',
-        full_name: 'ФИО',
-        phone: 'Телефон',
-        isAccept: 'Подтвердить запись?',
-        accept: 'Подтвердить',
-        repeat: 'Записаться заново'
-      },
-      kz: {
-        data: 'Тіркелу деректеріңіз',
-        date: 'Күні',
-        time: 'Уақыты',
-        iin: 'ЖСН',
-        full_name: 'Аты-жөніңіз',
-        phone: 'Телефон',
-        isAccept: 'Жазбаңызды растайсыз ба?',
-        accept: 'Растау',
-        repeat: 'Қайта тіркелу'
-      }
-    }
-
-    await ctx.reply(`${message[lang].data}:
+    const preAppointmentMessage = await ctx.reply(`${message[lang].data}:
 		\n${message[lang].date}: ${moment(ctx.session.date).format('DD.MM.YYYY')}
 		\n${message[lang].time}: ${ctx.session.time}
 		\n${message[lang].iin}: ${ctx.session.iin}
 		\n${message[lang].full_name}: ${ctx.session.full_name}
 		\n${message[lang].phone}: ${ctx.session.phone}
 		`)
+    ctx.session.preAppointmentMessageId = preAppointmentMessage.message_id
 
-    await ctx.reply(`${message[lang].isAccept}`, {
+    await ctx.reply(`${message[lang].confirm}`, {
       reply_markup: {
         inline_keyboard: [
           [
-            { text: `${message[lang].accept}`, callback_data: 'confirm_appointment' },
-            { text: `${message[lang].repeat}`, callback_data: `services_${center}` }
+            {
+              text: `${message[lang].accept}`,
+              callback_data: 'confirm_appointment'
+            },
+            {
+              text: `${message[lang].repeat}`,
+              callback_data: `services_${center}`
+            }
           ]
         ]
       }
@@ -136,7 +130,6 @@ export class BotServicesController {
 
   @Action('confirm_appointment')
   async onAppointmentConfirm(ctx: Context) {
-
     const lang = ctx.session.language
 
     if (ctx.callbackQuery?.message) {
@@ -173,32 +166,8 @@ export class BotServicesController {
 
     const { reception, center, service, profile, table, cabinet } = data
 
-
-    const message = {
-      ru: {
-        success: 'Вы успешно записаны!',
-        center: 'Центр',
-        service: 'Сервис',
-        manager: 'Менеджер',
-        cabinet: 'Кабинет',
-        table: 'Стол',
-        date: 'Дата',
-        time: 'Время'
-      },
-      kz: {
-        success: 'Сіз тіркелдіңіз!',
-        center: 'Орталық',
-        service: 'Қызмет түрі',
-        manager: 'Маман',
-        cabinet: 'Кабинет',
-        table: 'Үстел',
-        date: 'Күні',
-        time: 'Уақыты'
-      }
-    }
-
     await ctx.reply(
-      `${message[lang].success}
+      `${message[lang].success_reception}
     	\n${message[lang].center}: ${center[ctx.session.language]}
     	\n${message[lang].service}: ${service[ctx.session.language]}
     	\n${message[lang].manager}: ${profile.full_name}
@@ -207,5 +176,23 @@ export class BotServicesController {
     	\n${message[lang].date}: ${moment(reception.date).format('DD.MM.YYYY')}
     	\n${message[lang].time}: ${reception.time}`
     )
+
+    ctx.session.preAppointmentMessageId = null
+  }
+
+  @Action(/cancel_(.+)/)
+  async cancelRepection(ctx: Context) {
+    const receptionId = parseInt(ctx.match[1])
+
+    const reception = await this.receptionsService.findOne(receptionId)
+
+    if (reception.status.name !== 'pending') {
+      await ctx.reply('Вы не можете отменить запись')
+      return
+    }
+
+    await this.receptionsService.changeReceptionStatus(receptionId, 5)
+
+    await ctx.reply('Запись успешно отменена')
   }
 }

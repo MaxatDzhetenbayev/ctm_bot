@@ -11,11 +11,13 @@ import * as moment from 'moment'
 
 import { Center } from '../centers/entities/center.entity'
 import { Reception } from './entities/reception.entity'
-import { User } from 'src/general/users/entities/user.entity'
+import { AuthType, User } from 'src/general/users/entities/user.entity'
 import { Service } from '../services/entities/service.entity'
-import { Role } from 'src/general/users/entities/role.entity'
+import { Role, RoleType } from 'src/general/users/entities/role.entity'
 import { Profile } from '../users/entities/profile.entity'
 import { Status } from 'src/status/entities/status.entity'
+import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
+import { UsersService } from '../users/users.service'
 
 @Injectable()
 export class ReceptionsService {
@@ -24,17 +26,20 @@ export class ReceptionsService {
     private receptionRepository: typeof Reception,
     @InjectModel(User)
     private userRepository: typeof User,
-    private readonly sequelize: Sequelize
+    private readonly sequelize: Sequelize,
+    private readonly userService: UsersService
   ) { }
 
   logger = new Logger(ReceptionsService.name)
+
 
   async create(body: {
     user_id: number
     manager_id: number
     date: string
     time: string
-    status_id: number
+    status_id: number,
+
   }) {
     try {
       const reception = await this.receptionRepository.create(body)
@@ -74,12 +79,68 @@ export class ReceptionsService {
         ],
         order: [['time', 'ASC']]
       })
-      // console.log(receptions)
       return receptions
     } catch (error) {
       throw new InternalServerErrorException(
         'Ошибка при получении списка приемов'
       )
+    }
+  }
+
+  async findByUserTelegramId(telegramId: string) {
+    try {
+      this.logger.log(`Получение приема по telegramId ${telegramId}`)
+      const user = await this.userRepository.findOne({
+        where: {
+          telegram_id: telegramId
+        }
+      })
+
+      if (!user) {
+        throw new NotFoundException('Пользователь не найден')
+      }
+
+      const receptions = await this.receptionRepository.findAll({
+        where: {
+          user_id: user.id
+        },
+        include: [
+          {
+            model: Status,
+            attributes: ['name']
+          },
+          {
+            model: Service,
+            attributes: ['name']
+          },
+          {
+            model: User,
+            as: 'manager',
+            attributes: ['id'],
+            required: true,
+            include: [
+              {
+                model: Profile,
+                attributes: ['iin', 'full_name', 'phone']
+              }
+            ]
+          }
+        ],
+        limit: 5
+      })
+
+      if (receptions.length === 0) {
+        return []
+      }
+
+      return receptions
+    } catch (error) {
+      this.logger.error(`Ошибка при получении приема: ${error}`)
+      if (error instanceof NotFoundException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException('Ошибка при получении приема')
     }
   }
 
@@ -101,6 +162,10 @@ export class ReceptionsService {
               {
                 model: Profile,
                 attributes: ['iin', 'full_name', 'phone']
+              },
+              {
+                model: VisitorTypesTable,
+                attributes: ["name"]
               }
             ]
           },
@@ -172,7 +237,6 @@ export class ReceptionsService {
         '11:30',
         '12:00',
         '12:30',
-        '14:00',
         '14:30',
         '15:00',
         '15:30',
@@ -185,7 +249,10 @@ export class ReceptionsService {
       ]
 
       const currentTime = moment().format('HH:mm')
-      const filteredSlots = availableSlots.filter(slot => slot > currentTime)
+      const filteredSlots =
+        date === moment().format('YYYY-MM-DD')
+          ? availableSlots.filter(slot => slot > currentTime)
+          : availableSlots
 
       const managers = await this.userRepository.findAll({
         include: [
@@ -206,7 +273,10 @@ export class ReceptionsService {
             as: 'manager_works',
             required: false,
             where: {
-              date
+              date,
+              status_id: {
+                [sequelize.Op.not]: 5
+              }
             }
           }
         ]
@@ -221,8 +291,8 @@ export class ReceptionsService {
           })
         }
 
-        const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
 
+        const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
         return {
           managerId: manager.id,
           freeSlots
@@ -348,7 +418,8 @@ export class ReceptionsService {
         service_id: service_id,
         status_id: 2,
         date,
-        time
+        time,
+        center_id: center_id
       })
 
       if (!reception) {
@@ -357,11 +428,11 @@ export class ReceptionsService {
       }
 
       const managerProfile = await leastBusyManager.$get('profile')
+
       const { table, cabinet } = await leastBusyManager.$get('manager_table')
 
       const center = leastBusyManager.get('centers')[0].name
       const service = leastBusyManager.get('services')[0].name
-
       return {
         reception,
         profile: managerProfile,
@@ -373,6 +444,87 @@ export class ReceptionsService {
     } catch (error) {
       this.logger.error(`Ошибка при выборе менеджера: ${error}`)
       throw new InternalServerErrorException('Ошибка при выборе менеджера')
+    }
+  }
+
+
+  async createOffLiineReceptions(body: { visitor_type_id: number; full_name: string; iin: string; phone: string; time: string; service_id: number }, manager: { id: number; login: string; role: string; center_id: number }) {
+
+    const currentDate = moment().format('YYYY-MM-DD')
+    const { time, service_id, visitor_type_id, ...profile } = body
+
+
+    try {
+      const createdUser = await this.userService.createUser({
+        dto: {
+          profile: profile,
+          auth_type: AuthType.offline,
+          role: RoleType.user,
+          visitor_type: visitor_type_id,
+        }
+      })
+
+      const reception = await this.receptionRepository.create({
+        user_id: createdUser.id,
+        manager_id: manager.id,
+        service_id: service_id,
+        status_id: 2,
+        date: currentDate,
+        time,
+        center_id: manager.center_id
+      })
+
+      if (!reception) {
+        throw new InternalServerErrorException('Не удалось создать запись')
+      }
+
+      return reception
+
+    } catch (error) {
+
+      console.log(error)
+      throw new InternalServerErrorException('Не удалось создать запись')
+    }
+
+  }
+
+  async getAllByManagerId(manager_id: number) {
+    try {
+      const managerReceptions = await this.receptionRepository.findAll({
+        attributes: ['id', 'date', 'time', 'rating'],
+        where: {
+          manager_id
+        },
+        order: [['date', 'DESC'], ['time', 'DESC']],
+        include: [
+          {
+            model: User,
+            as: 'user',
+            attributes: ['id'],
+            required: true,
+            include: [
+              {
+                model: Profile,
+                attributes: ['iin', 'full_name', 'phone']
+              },
+            ]
+          },
+          {
+            model: Status,
+            attributes: ['name']
+          },
+        ]
+      })
+
+      if (!managerReceptions.length) {
+        return []
+      }
+
+      return managerReceptions
+
+    } catch (error) {
+      this.logger.error(`Ошибка при выборе записей менеджера: ${error}`)
+      throw new InternalServerErrorException('Ошибка при выборе записей менеджера')
     }
   }
 }

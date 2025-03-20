@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -14,75 +15,62 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import * as path from 'path'
-import { Roles } from '../auth/guards/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CreateUserDto } from './dto/create-user.dto'
-import { RoleType } from './entities/role.entity'
-import { UsersService } from './users.service'
 import {
-  ApiCreateManager,
   ApiCreateUser,
   ApiGetManagersByCenter,
   ApiGetProfile,
-  ApiSearchManager,
   ApiUpdateEmployee,
   ApiUsersTags
 } from './users.swagger'
+import { UsersService } from './users.service'
+import { GetManagersDto } from './dto/get-managers.dto'
+import { UpdateManagerDto } from './dto/update-manager.dto'
+import { RoleType } from './entities/role.entity'
+import { Roles } from '../auth/guards/roles.decorator'
 
-interface RequestWithUser extends Request {
+export interface RequestWithUser extends Request {
   user: { id: number; login: string; role: string; center_id: number }
 }
 
 @ApiUsersTags()
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RolesGuard)
-  @Roles(RoleType.admin)
+  // @UseGuards(RolesGuard)
+  // @Roles(RoleType.superadmin, RoleType.admin, RoleType.manager)
   @Post()
   @ApiCreateUser()
-  async create(@Body() body: CreateUserDto) {
-    return this.usersService.createUser(body)
+  async create(@Body() body: CreateUserDto, @Req() req) {
+    return this.usersService.createUser({
+      dto: body,
+      // !WARNING req.user.role
+      creater_role: null
+    })
   }
 
   @HttpCode(HttpStatus.OK)
   @Get('profile')
   @ApiGetProfile()
-  async getProfile(@Req() req) {
+  async getProfile(@Req() req: RequestWithUser) {
     return this.usersService.getProfileUser({
-      login: req.user.login
+      user: req.user
     })
-  }
-
-  // Создание менеджера
-  @HttpCode(HttpStatus.CREATED)
-  @UseGuards(RolesGuard)
-  // @Roles(RoleType.admin) // Только админы могут создавать сотрудников
-  @Post('manager')
-  @ApiCreateManager()
-  async createEmployee(@Body() body: CreateUserDto, @Req() req) {
-    return this.usersService.createManager(body, req.user)
   }
 
   // Получение списка менеджеров по ID центра
   @HttpCode(HttpStatus.OK)
   @Get('managers/center')
   @ApiGetManagersByCenter()
-  async getManagers(@Req() req: RequestWithUser) {
+  async getManagers(
+    @Req() req: RequestWithUser,
+    @Query() query: GetManagersDto
+  ) {
     const centerId = req.user.center_id
-    return this.usersService.getManagersByCenter(centerId)
-  }
-
-  // Поиск работника по ФИО
-  @UseGuards(RolesGuard)
-  // @Roles(RoleType.admin)
-  @HttpCode(HttpStatus.OK)
-  @Get('managers/search')
-  @ApiSearchManager()
-  async searchManager(@Query('full_name') fullName: string, @Req() req) {
-    return this.usersService.getEmployeeByFullName(fullName, req.user)
+    return this.usersService.getManagersByCenter(centerId, query)
   }
 
   // Изменение информации о работнике по ID
@@ -93,8 +81,8 @@ export class UsersController {
   @ApiUpdateEmployee()
   async updateEmployee(
     @Param('id') employeeId: number,
-    @Body() updateData: { full_name?: string; iin?: string; phone?: string },
-    @Req() req
+    @Body() updateData: UpdateManagerDto,
+    @Req() req: RequestWithUser
   ) {
     return this.usersService.updateEmployeeById(
       employeeId,
@@ -104,11 +92,19 @@ export class UsersController {
   }
 
   @UseGuards(RolesGuard)
+  @Roles(RoleType.admin, RoleType.superadmin)
+  @HttpCode(HttpStatus.OK)
+  @Delete('managers/:id')
+  async deleteManager(@Param('id') id: number, @Req() req: RequestWithUser) {
+    return this.usersService.deleteManager(id, req.user.center_id)
+  }
+  @UseGuards(RolesGuard)
   @HttpCode(HttpStatus.OK)
   @Get('managers/:id')
-  async getManagerById(@Param('id') id: number) {
-    return this.usersService.getManager(id)
+  async getManagerById(@Param('id') id: number, @Req() req: RequestWithUser) {
+    return this.usersService.getManager(id, req.user)
   }
+
   @Get('openapi')
   getJsonSpec(@Res() res: Response) {
     const filePath = path.resolve('./swagger-spec.json')
