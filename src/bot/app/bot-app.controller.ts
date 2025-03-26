@@ -15,7 +15,7 @@ export class BotAppController {
     private readonly botCenterService: BotCentersService,
     private readonly botLanguageService: BotLanguageService,
     private readonly receptionsService: ReceptionsService
-  ) {}
+  ) { }
 
   @Start()
   async onStart(@Ctx() ctx: Context) {
@@ -53,15 +53,15 @@ export class BotAppController {
             reply_markup:
               status.name === 'pending'
                 ? {
-                    inline_keyboard: [
-                      [
-                        {
-                          text: 'Отменить',
-                          callback_data: `cancel_${reception.id}`
-                        }
-                      ]
+                  inline_keyboard: [
+                    [
+                      {
+                        text: 'Отменить',
+                        callback_data: `cancel_${reception.id}`
+                      }
                     ]
-                  }
+                  ]
+                }
                 : {}
           }
         )
@@ -81,7 +81,6 @@ export class BotAppController {
   }
 
   async processAfterLanguageSelection(ctx: Context, language: string) {
-    await ctx.deleteMessage()
 
     const chatId = String(ctx.chat?.id)
     const user = await this.userService.validateUserByTelegram(chatId)

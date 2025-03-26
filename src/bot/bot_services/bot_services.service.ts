@@ -12,16 +12,16 @@ export class BotServicesService {
   ) { }
 
   async showServices(ctx, centerId) {
-    if (ctx.session.preAppointmentMessageId) {
-      await ctx.deleteMessage(ctx.session.preAppointmentMessageId)
-    }
+    // if (ctx.session.preAppointmentMessageId) {
+    //   await ctx.deleteMessage(ctx.session.preAppointmentMessageId)
+    // }
 
     const chatId = String(ctx.chat?.id)
     const { visitor_type_id } = await this.userService.validateUserByTelegram(chatId)
 
     ctx.session.centerId = centerId
     const lang = ctx.session.language
-    const services = await this.servicesService.findAll(visitor_type_id)
+    const services = await this.servicesService.findAll(visitor_type_id, 'true')
 
     const keyboardServices = services.map(service => [
       {
