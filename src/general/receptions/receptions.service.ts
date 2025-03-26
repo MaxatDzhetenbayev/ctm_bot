@@ -253,7 +253,8 @@ export class ReceptionsService {
         date === moment().format('YYYY-MM-DD')
           ? availableSlots.filter(slot => slot > currentTime)
           : availableSlots
-
+    console.log(currentTime);
+      console.log(filteredSlots);
       const managers = await this.userRepository.findAll({
         include: [
           {
