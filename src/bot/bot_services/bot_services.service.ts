@@ -12,9 +12,9 @@ export class BotServicesService {
   ) { }
 
   async showServices(ctx, centerId) {
-    if (ctx.session.preAppointmentMessageId) {
-      await ctx.deleteMessage(ctx.session.preAppointmentMessageId)
-    }
+    // if (ctx.session.preAppointmentMessageId) {
+    //   await ctx.deleteMessage(ctx.session.preAppointmentMessageId)
+    // }
 
     const chatId = String(ctx.chat?.id)
     const { visitor_type_id } = await this.userService.validateUserByTelegram(chatId)
