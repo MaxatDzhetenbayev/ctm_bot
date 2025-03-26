@@ -448,10 +448,11 @@ export class ReceptionsService {
   }
 
 
-  async createOffLiineReceptions(body: { visitor_type_id: number; full_name: string; iin: string; phone: string; time: string; service_id: number }, manager: { id: number; login: string; role: string; center_id: number }) {
+  async createOffLiineReceptions(body: { visitor_type_id: number; full_name: string; iin: string; phone: string; service_id: number }, manager: { id: number; login: string; role: string; center_id: number }) {
 
     const currentDate = moment().format('YYYY-MM-DD')
-    const { time, service_id, visitor_type_id, ...profile } = body
+    const currentTime = moment().format('HH:mm:ss')
+    const { service_id, visitor_type_id, ...profile } = body
 
 
     try {
@@ -470,7 +471,7 @@ export class ReceptionsService {
         service_id: service_id,
         status_id: 2,
         date: currentDate,
-        time,
+        currentTime,
         center_id: manager.center_id
       })
 
