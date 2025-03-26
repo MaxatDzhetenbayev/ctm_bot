@@ -21,7 +21,7 @@ export class BotServicesService {
 
     ctx.session.centerId = centerId
     const lang = ctx.session.language
-    const services = await this.servicesService.findAll(visitor_type_id)
+    const services = await this.servicesService.findAll(visitor_type_id, 'true')
 
     const keyboardServices = services.map(service => [
       {
