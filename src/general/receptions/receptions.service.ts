@@ -471,7 +471,7 @@ export class ReceptionsService {
         service_id: service_id,
         status_id: 2,
         date: currentDate,
-        currentTime,
+        time: currentTime,
         center_id: manager.center_id
       })
 
