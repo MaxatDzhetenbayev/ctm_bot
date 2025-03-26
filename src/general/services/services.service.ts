@@ -40,9 +40,10 @@ export class ServicesService {
     }
   }
 
-  async findAll(visitor_type_id?: number) {
+  async findAll(visitor_type_id?: number, isTree?: string) {
+
     try {
-      const where = visitor_type_id ? { id: visitor_type_id } : undefined
+      const where = visitor_type_id ? { id: visitor_type_id } : {}
       const services = await this.serviceRepository.findAll({
         include: [
           {
@@ -69,8 +70,7 @@ export class ServicesService {
             children: buildHierarchy(service.id)
           }))
       }
-
-      return buildHierarchy(null)
+      return isTree === 'true' ? buildHierarchy(null) : services
     } catch (error) {
       this.logger.error(`Ошибка при получении списка сервисов: ${error}`)
       throw new InternalServerErrorException(

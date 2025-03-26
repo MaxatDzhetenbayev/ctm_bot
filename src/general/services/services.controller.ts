@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards
 } from '@nestjs/common'
@@ -41,8 +42,8 @@ export class ServicesController {
 
   @ApiFindAllServices()
   @Get()
-  findAll() {
-    return this.servicesService.findAll()
+  findAll(@Query('tree') tree: string) {
+    return this.servicesService.findAll(null, tree)
   }
 
   @UseGuards(RolesGuard)
