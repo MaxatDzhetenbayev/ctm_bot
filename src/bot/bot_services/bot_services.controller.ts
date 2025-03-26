@@ -101,7 +101,7 @@ export class BotServicesController {
 
     const center = ctx.session.centerId
 
-    const preAppointmentMessage = await ctx.reply(`${message[lang].data}:
+    const preAppointmentMessage = await ctx.reply(`${message[lang].your_data}:
 		\n${message[lang].date}: ${moment(ctx.session.date).format('DD.MM.YYYY')}
 		\n${message[lang].time}: ${ctx.session.time}
 		\n${message[lang].iin}: ${ctx.session.iin}
