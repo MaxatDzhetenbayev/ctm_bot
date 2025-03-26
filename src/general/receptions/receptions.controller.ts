@@ -57,7 +57,6 @@ export class ReceptionsController {
       full_name: string,
       iin: string,
       phone: string,
-      time: string
       service_id: number
     },
     @Req() req: CustomRequest
