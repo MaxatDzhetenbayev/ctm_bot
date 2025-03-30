@@ -376,7 +376,7 @@ export class UsersService {
       const findedUser = await this.usersRepository.findOne(userFindConfig)
 
       if (findedUser) {
-        throw new ConflictException('Такой пользователь уже существует')
+        return findedUser
       }
 
       const { id: role_id } = await this.rolesRepository.findOne({
