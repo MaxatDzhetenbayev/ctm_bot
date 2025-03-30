@@ -28,18 +28,16 @@ export class ReceptionsService {
     private userRepository: typeof User,
     private readonly sequelize: Sequelize,
     private readonly userService: UsersService
-  ) { }
+  ) {}
 
   logger = new Logger(ReceptionsService.name)
-
 
   async create(body: {
     user_id: number
     manager_id: number
     date: string
     time: string
-    status_id: number,
-
+    status_id: number
   }) {
     try {
       const reception = await this.receptionRepository.create(body)
@@ -165,7 +163,7 @@ export class ReceptionsService {
               },
               {
                 model: VisitorTypesTable,
-                attributes: ["name"]
+                attributes: ['name']
               }
             ]
           },
@@ -253,8 +251,8 @@ export class ReceptionsService {
         date === moment().format('YYYY-MM-DD')
           ? availableSlots.filter(slot => slot > currentTime)
           : availableSlots
-    console.log(currentTime);
-      console.log(filteredSlots);
+      console.log(currentTime)
+      console.log(filteredSlots)
       const managers = await this.userRepository.findAll({
         include: [
           {
@@ -291,7 +289,6 @@ export class ReceptionsService {
             bookedSlots.add(bookedTime)
           })
         }
-
 
         const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
         return {
@@ -448,13 +445,19 @@ export class ReceptionsService {
     }
   }
 
-
-  async createOffLiineReceptions(body: { visitor_type_id: number; full_name: string; iin: string; phone: string; service_id: number }, manager: { id: number; login: string; role: string; center_id: number }) {
-
+  async createOffLiineReceptions(
+    body: {
+      visitor_type_id: number
+      full_name: string
+      iin: string
+      phone: string
+      service_id: number
+    },
+    manager: { id: number; login: string; role: string; center_id: number }
+  ) {
     const currentDate = moment().format('YYYY-MM-DD')
     const currentTime = moment().format('HH:mm:ss')
     const { service_id, visitor_type_id, ...profile } = body
-
 
     try {
       const createdUser = await this.userService.createUser({
@@ -462,7 +465,7 @@ export class ReceptionsService {
           profile: profile,
           auth_type: AuthType.offline,
           role: RoleType.user,
-          visitor_type: visitor_type_id,
+          visitor_type: visitor_type_id
         }
       })
 
@@ -470,7 +473,7 @@ export class ReceptionsService {
         user_id: createdUser.id,
         manager_id: manager.id,
         service_id: service_id,
-        status_id: 2,
+        status_id: 3,
         date: currentDate,
         time: currentTime,
         center_id: manager.center_id
@@ -481,13 +484,10 @@ export class ReceptionsService {
       }
 
       return reception
-
     } catch (error) {
-
       console.log(error)
       throw new InternalServerErrorException('Не удалось создать запись')
     }
-
   }
 
   async getAllByManagerId(manager_id: number) {
@@ -497,7 +497,10 @@ export class ReceptionsService {
         where: {
           manager_id
         },
-        order: [['date', 'DESC'], ['time', 'DESC']],
+        order: [
+          ['date', 'DESC'],
+          ['time', 'DESC']
+        ],
         include: [
           {
             model: User,
@@ -508,13 +511,13 @@ export class ReceptionsService {
               {
                 model: Profile,
                 attributes: ['iin', 'full_name', 'phone']
-              },
+              }
             ]
           },
           {
             model: Status,
             attributes: ['name']
-          },
+          }
         ]
       })
 
@@ -523,10 +526,11 @@ export class ReceptionsService {
       }
 
       return managerReceptions
-
     } catch (error) {
       this.logger.error(`Ошибка при выборе записей менеджера: ${error}`)
-      throw new InternalServerErrorException('Ошибка при выборе записей менеджера')
+      throw new InternalServerErrorException(
+        'Ошибка при выборе записей менеджера'
+      )
     }
   }
 }
