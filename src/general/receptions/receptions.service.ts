@@ -18,6 +18,8 @@ import { Profile } from '../users/entities/profile.entity'
 import { Status } from 'src/status/entities/status.entity'
 import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
 import { UsersService } from '../users/users.service'
+import { Telegraf } from 'telegraf'
+import { InjectBot } from 'nestjs-telegraf'
 
 @Injectable()
 export class ReceptionsService {
@@ -27,7 +29,8 @@ export class ReceptionsService {
     @InjectModel(User)
     private userRepository: typeof User,
     private readonly sequelize: Sequelize,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    @InjectBot() private readonly bot: Telegraf
   ) {}
 
   logger = new Logger(ReceptionsService.name)
@@ -209,7 +212,18 @@ export class ReceptionsService {
       reception.status_id = statusId
       await reception.save()
 
-      this.logger.log(`Прием ${receptionId} принят`)
+      if (statusId == 7) {
+        this.bot.telegram.sendMessage(
+          '706873600',
+          'Вы приглашены на прием. Пожалуйста, зайдите в кабинет.'
+        )
+      } else if (statusId == 6) {
+        this.bot.telegram.sendMessage(
+          '706873600',
+          'Вы приглашены на прием. Пожалуйста, зайдите в кабинет.'
+        )
+      }
+
       return reception
     } catch (error) {
       this.logger.error(`Ошибка при изменении статуса приема: ${error}`)
