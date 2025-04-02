@@ -56,8 +56,7 @@ export class ServicesService {
 
 
       if (!services.length) {
-        this.logger.error(`Ошибка при получении списка сервисов`)
-        throw new NotFoundException('Сервисы не найдены')
+        return []
       }
 
       // Функция для построения иерархии
