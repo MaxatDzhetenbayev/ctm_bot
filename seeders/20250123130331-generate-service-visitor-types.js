@@ -79,6 +79,14 @@ module.exports = {
       {
         service_id: 11,
         visitor_type_id: 2
+      },
+      {
+        service_id: 12,
+        visitor_type_id: 2
+      },
+      {
+        service_id: 13,
+        visitor_type_id: 2
       }
     ])
   },
