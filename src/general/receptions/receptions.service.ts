@@ -31,7 +31,7 @@ export class ReceptionsService {
     private readonly sequelize: Sequelize,
     private readonly userService: UsersService,
     @InjectBot() private readonly bot: Telegraf
-  ) {}
+  ) { }
 
   logger = new Logger(ReceptionsService.name)
 
@@ -212,15 +212,18 @@ export class ReceptionsService {
       reception.status_id = statusId
       await reception.save()
 
+
+      const { telegram_id } = await reception.$get('user')
+
       if (statusId == 7) {
         this.bot.telegram.sendMessage(
-          '706873600',
+          telegram_id,
           'Вы приглашены на прием. Пожалуйста, зайдите в кабинет.'
         )
       } else if (statusId == 6) {
         this.bot.telegram.sendMessage(
-          '706873600',
-          'Вы приглашены на прием. Пожалуйста, зайдите в кабинет.'
+          telegram_id,
+          'Вы не явились на прием. Пожалуйста, запишитесь заново, если вам все еще нужна услуга.'
         )
       }
 
