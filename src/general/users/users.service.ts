@@ -291,6 +291,41 @@ export class UsersService {
     }
   }
 
+
+  async findUserByIin(iin: string) {
+    try {
+      const user = await this.usersRepository.findOne({
+        include: [
+          {
+            model: Profile,
+            where: {
+              iin
+            }
+          }
+        ]
+      }
+      )
+
+      if (!user) {
+        throw new NotFoundException('Пользователь не найден')
+      } 
+
+      const { profile: { full_name, iin: userIin, phone }, visitor_type_id } = user
+      return {
+        full_name,
+        userIin,
+        phone,
+        visitor_type_id,
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException('Ошибка при получении пользователя')
+    }
+  }
+
   async createUser({
     dto,
     creater_role

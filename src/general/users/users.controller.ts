@@ -53,6 +53,17 @@ export class UsersController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @Get('iin/:iin')
+  @UseGuards(RolesGuard)
+  @Roles(RoleType.manager)
+  @ApiGetProfile()
+  async getUserByIin(
+    @Param('iin') iin: string,
+  ) {
+    return this.usersService.findUserByIin(iin)
+  }
+
+  @HttpCode(HttpStatus.OK)
   @Get('profile')
   @ApiGetProfile()
   async getProfile(@Req() req: RequestWithUser) {
