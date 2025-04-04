@@ -20,6 +20,7 @@ import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
 import { UsersService } from '../users/users.service'
 import { Telegraf } from 'telegraf'
 import { InjectBot } from 'nestjs-telegraf'
+import { createOffLineReceptionDto } from './dto/create-reception.dto'
 
 @Injectable()
 export class ReceptionsService {
@@ -47,7 +48,6 @@ export class ReceptionsService {
 
       return reception
     } catch (error) {
-      console.log(error)
       throw new InternalServerErrorException('Ошибка при создании приема')
     }
   }
@@ -268,8 +268,7 @@ export class ReceptionsService {
         date === moment().format('YYYY-MM-DD')
           ? availableSlots.filter(slot => slot > currentTime)
           : availableSlots
-      console.log(currentTime)
-      console.log(filteredSlots)
+
       const managers = await this.userRepository.findAll({
         include: [
           {
@@ -321,7 +320,6 @@ export class ReceptionsService {
 
       return Array.from(globalFreeSlots).sort()
     } catch (error) {
-      console.log(error)
       throw new InternalServerErrorException(
         'Ошибка при получении расписания приемов'
       )
@@ -463,13 +461,7 @@ export class ReceptionsService {
   }
 
   async createOffLiineReceptions(
-    body: {
-      visitor_type_id: number
-      full_name: string
-      iin: string
-      phone: string
-      service_id: number
-    },
+    body: createOffLineReceptionDto,
     manager: { id: number; login: string; role: string; center_id: number }
   ) {
     const currentDate = moment().format('YYYY-MM-DD')
@@ -502,7 +494,6 @@ export class ReceptionsService {
 
       return reception
     } catch (error) {
-      console.log(error)
       throw new InternalServerErrorException('Не удалось создать запись')
     }
   }
