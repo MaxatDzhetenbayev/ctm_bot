@@ -12,26 +12,21 @@ export class CreateReceptionDto {
 
 
 export class createOffLineReceptionDto {
-  @IsNotEmpty()
-  @IsNumber()
+  @IsNotEmpty({ message: 'Выбор типа пользователя обязательно' })
   visitor_type_id: number
 
-  @IsString()
-  @MinLength(2)
+  @MinLength(6, { message: 'Поле ФИО должно содержать минимум 6 символов' })
   full_name: string
 
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(12)
-  @MaxLength(12)
+  @IsNotEmpty({ message: 'Заполнение Поля ИИН обязательно' })
+  @MinLength(12, { message: 'ИИН должен содержать минимум 12 символов' })
+  @MaxLength(12, { message: 'ИИН должен содержать максимум 12 символов' })
   iin: string
 
-  @IsNotEmpty()
-  @IsPhoneNumber('KZ')
-  @IsString()
+  @IsNotEmpty({ message: 'Заполнение поля телефона обязательно' })
+  @IsPhoneNumber('KZ', { message: 'Принмаются только Казахстанские номера' })
   phone: string
 
-  @IsNotEmpty({ message: 'Должен быть выбран один сервис' })
-  @IsNumber()
+  @IsNotEmpty({ message: 'Должен быть выбран сервис' })
   service_id: number
 }
