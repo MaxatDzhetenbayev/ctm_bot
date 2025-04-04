@@ -10,6 +10,7 @@ import { InjectModel } from '@nestjs/sequelize'
 import { Service } from './entities/service.entity'
 import { ManagerServices } from './entities/manager-services.entity'
 import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
+import { FindOptions, WhereOptions } from 'sequelize'
 
 @Injectable()
 export class ServicesService {
@@ -40,19 +41,23 @@ export class ServicesService {
     }
   }
 
-  async findAll(visitor_type_id?: number, isTree?: string) {
+  async findAll(visitor_type_id: null | number, isTree?: string) {
 
     try {
-      const where = visitor_type_id ? { id: visitor_type_id } : {}
-      const services = await this.serviceRepository.findAll({
-        include: [
+      const options: FindOptions = {
+      }
+      if (visitor_type_id) {
+        options.include = [
           {
             model: VisitorTypesTable,
-            where,
+            where: { id: visitor_type_id },
             through: { attributes: [] }
           }
         ]
-      })
+      }
+
+      const services = await this.serviceRepository.findAll(options)
+
 
 
       if (!services.length) {
