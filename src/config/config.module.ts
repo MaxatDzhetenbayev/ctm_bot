@@ -56,7 +56,14 @@ const sessions = new LocalSession({ database: 'session_db.json' })
           Status,
           VisitorTypesTable,
           ServiceVisitorType
-        ]
+        ],
+        synchronize: true,
+        pool: {
+          max: 20,
+          min: 5,
+          acquire: 30000,
+          idle: 10000
+        }
       })
     }),
     ConfigModule.forRoot({
