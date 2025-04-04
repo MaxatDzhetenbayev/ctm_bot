@@ -47,7 +47,7 @@ module.exports = {
       } catch (error) {
         console.error(
           "Ошибка при установке ограничений на удаление и обновление внешних ключей: " +
-            error
+          error
         );
         throw error;
       }
@@ -95,10 +95,7 @@ module.exports = {
           transaction,
         });
       } catch (error) {
-        console.log(
-          "Ошибка при удалении ограничений на удаление и обновление внешних ключей: " +
-            error
-        );
+
         throw error;
       }
     });
