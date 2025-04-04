@@ -20,6 +20,7 @@ import {
   ApiFindReceptionById,
   ApiReceptionsTags
 } from './receptions.swagger'
+import { createOffLineReceptionDto } from './dto/create-reception.dto'
 
 
 interface CustomRequest extends Request {
@@ -52,13 +53,7 @@ export class ReceptionsController {
   @Post('offline')
   createOffline(
     @Body()
-    body: {
-      visitor_type_id: number,
-      full_name: string,
-      iin: string,
-      phone: string,
-      service_id: number
-    },
+    body: createOffLineReceptionDto,
     @Req() req: CustomRequest
   ) {
     return this.receptionsService.createOffLiineReceptions(body, req.user)
