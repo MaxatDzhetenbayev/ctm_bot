@@ -59,10 +59,10 @@ const sessions = new LocalSession({ database: 'session_db.json' })
         ],
         synchronize: true,
         pool: {
-          max: 70,
+          max: 100,
           min: 5,
-          acquire: 30000,
-          idle: 10000
+          acquire: 60000,
+          idle: 300000
         }
       })
     }),
