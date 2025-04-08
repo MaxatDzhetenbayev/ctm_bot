@@ -41,7 +41,7 @@ const sessions = new LocalSession({ database: 'session_db.json' })
         username: configService.get<string>('DB_USER'),
         password: configService.get<string>('DB_PASSWORD'),
         database: configService.get<string>('DB_NAME'),
-        logging: false,
+        logging: true,
         timezone: '+5:00',
         models: [
           User,
@@ -59,7 +59,7 @@ const sessions = new LocalSession({ database: 'session_db.json' })
         ],
         synchronize: true,
         pool: {
-          max: 20,
+          max: 70,
           min: 5,
           acquire: 30000,
           idle: 10000
