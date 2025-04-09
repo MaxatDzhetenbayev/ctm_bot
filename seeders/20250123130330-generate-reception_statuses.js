@@ -20,7 +20,10 @@ module.exports = {
         name: "canceled",
       },
       {
-        name: "choise",
+        name: "no-show",
+      },
+      {
+        name: "called",
       },
     ]);
   },

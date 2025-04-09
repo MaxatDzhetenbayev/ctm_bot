@@ -32,7 +32,7 @@ export class UsersService {
     @InjectModel(ManagerTable)
     private readonly managerTableRepository: typeof ManagerTable,
     private readonly sequelize: Sequelize
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(this.usersRepository.name)
 
@@ -172,17 +172,7 @@ export class UsersService {
       const options: FindOptions = {
         limit,
         offset,
-        where: { role_id: 3 },
-        include: [
-          {
-            model: Center,
-            where: {
-              id: center_id
-            },
-            attributes: [],
-            through: { attributes: [] }
-          }
-        ]
+        where: { role_id: 3, center_id },
       }
 
       if (search) {
@@ -295,10 +285,44 @@ export class UsersService {
       if (error instanceof HttpException) {
         throw error
       }
-      console.log(error)
       throw new InternalServerErrorException(
         'Ошибка при обновлении информации о работнике'
       )
+    }
+  }
+
+
+  async findUserByIin(iin: string) {
+    try {
+      const user = await this.usersRepository.findOne({
+        include: [
+          {
+            model: Profile,
+            where: {
+              iin
+            }
+          }
+        ]
+      }
+      )
+
+      if (!user) {
+        throw new NotFoundException('Пользователь не найден')
+      } 
+
+      const { profile: { full_name, iin: userIin, phone }, visitor_type_id } = user
+      return {
+        full_name,
+        userIin,
+        phone,
+        visitor_type_id,
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error
+      }
+
+      throw new InternalServerErrorException('Ошибка при получении пользователя')
     }
   }
 
@@ -376,7 +400,7 @@ export class UsersService {
       const findedUser = await this.usersRepository.findOne(userFindConfig)
 
       if (findedUser) {
-        throw new ConflictException('Такой пользователь уже существует')
+        return findedUser
       }
 
       const { id: role_id } = await this.rolesRepository.findOne({
@@ -420,6 +444,14 @@ export class UsersService {
       await user.$add('centers', center_id, { transaction })
 
       if (role == RoleType.manager) {
+
+        await this.usersRepository.update(
+          { center_id },
+          {
+            where: { id: user.id },
+            transaction
+          }
+        )
         await this.managerTableRepository.create(
           {
             manager_id: user.id,

@@ -18,6 +18,9 @@ import { Profile } from '../users/entities/profile.entity'
 import { Status } from 'src/status/entities/status.entity'
 import { VisitorTypesTable } from '../users/entities/visitor_types.entity'
 import { UsersService } from '../users/users.service'
+import { Telegraf } from 'telegraf'
+import { InjectBot } from 'nestjs-telegraf'
+import { createOffLineReceptionDto } from './dto/create-reception.dto'
 
 @Injectable()
 export class ReceptionsService {
@@ -27,26 +30,24 @@ export class ReceptionsService {
     @InjectModel(User)
     private userRepository: typeof User,
     private readonly sequelize: Sequelize,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    @InjectBot() private readonly bot: Telegraf
   ) { }
 
   logger = new Logger(ReceptionsService.name)
-
 
   async create(body: {
     user_id: number
     manager_id: number
     date: string
     time: string
-    status_id: number,
-
+    status_id: number
   }) {
     try {
       const reception = await this.receptionRepository.create(body)
 
       return reception
     } catch (error) {
-      console.log(error)
       throw new InternalServerErrorException('Ошибка при создании приема')
     }
   }
@@ -165,7 +166,7 @@ export class ReceptionsService {
               },
               {
                 model: VisitorTypesTable,
-                attributes: ["name"]
+                attributes: ['name']
               }
             ]
           },
@@ -211,7 +212,21 @@ export class ReceptionsService {
       reception.status_id = statusId
       await reception.save()
 
-      this.logger.log(`Прием ${receptionId} принят`)
+
+      const { telegram_id } = await reception.$get('user')
+
+      if (statusId == 7) {
+        this.bot.telegram.sendMessage(
+          telegram_id,
+          'Вы приглашены на прием. Пожалуйста, зайдите в кабинет.'
+        )
+      } else if (statusId == 6) {
+        this.bot.telegram.sendMessage(
+          telegram_id,
+          'Вы не явились на прием. Пожалуйста, запишитесь заново, если вам все еще нужна услуга.'
+        )
+      }
+
       return reception
     } catch (error) {
       this.logger.error(`Ошибка при изменении статуса приема: ${error}`)
@@ -291,7 +306,6 @@ export class ReceptionsService {
           })
         }
 
-
         const freeSlots = filteredSlots.filter(slot => !bookedSlots.has(slot))
         return {
           managerId: manager.id,
@@ -306,7 +320,6 @@ export class ReceptionsService {
 
       return Array.from(globalFreeSlots).sort()
     } catch (error) {
-      console.log(error)
       throw new InternalServerErrorException(
         'Ошибка при получении расписания приемов'
       )
@@ -447,13 +460,13 @@ export class ReceptionsService {
     }
   }
 
-
-  async createOffLiineReceptions(body: { visitor_type_id: number; full_name: string; iin: string; phone: string; service_id: number }, manager: { id: number; login: string; role: string; center_id: number }) {
-
+  async createOffLiineReceptions(
+    body: createOffLineReceptionDto,
+    manager: { id: number; login: string; role: string; center_id: number }
+  ) {
     const currentDate = moment().format('YYYY-MM-DD')
     const currentTime = moment().format('HH:mm:ss')
     const { service_id, visitor_type_id, ...profile } = body
-
 
     try {
       const createdUser = await this.userService.createUser({
@@ -461,7 +474,7 @@ export class ReceptionsService {
           profile: profile,
           auth_type: AuthType.offline,
           role: RoleType.user,
-          visitor_type: visitor_type_id,
+          visitor_type: visitor_type_id
         }
       })
 
@@ -469,7 +482,7 @@ export class ReceptionsService {
         user_id: createdUser.id,
         manager_id: manager.id,
         service_id: service_id,
-        status_id: 2,
+        status_id: 3,
         date: currentDate,
         time: currentTime,
         center_id: manager.center_id
@@ -480,13 +493,9 @@ export class ReceptionsService {
       }
 
       return reception
-
     } catch (error) {
-
-      console.log(error)
       throw new InternalServerErrorException('Не удалось создать запись')
     }
-
   }
 
   async getAllByManagerId(manager_id: number) {
@@ -496,7 +505,10 @@ export class ReceptionsService {
         where: {
           manager_id
         },
-        order: [['date', 'DESC'], ['time', 'DESC']],
+        order: [
+          ['date', 'DESC'],
+          ['time', 'DESC']
+        ],
         include: [
           {
             model: User,
@@ -507,13 +519,13 @@ export class ReceptionsService {
               {
                 model: Profile,
                 attributes: ['iin', 'full_name', 'phone']
-              },
+              }
             ]
           },
           {
             model: Status,
             attributes: ['name']
-          },
+          }
         ]
       })
 
@@ -522,10 +534,11 @@ export class ReceptionsService {
       }
 
       return managerReceptions
-
     } catch (error) {
       this.logger.error(`Ошибка при выборе записей менеджера: ${error}`)
-      throw new InternalServerErrorException('Ошибка при выборе записей менеджера')
+      throw new InternalServerErrorException(
+        'Ошибка при выборе записей менеджера'
+      )
     }
   }
 }

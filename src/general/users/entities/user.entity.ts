@@ -41,6 +41,7 @@ export enum AuthType {
 export class User extends Model<User> {
   @Column({ defaultValue: 'telegram' }) auth_type: AuthType
   @Column telegram_id: string
+  @Column center_id: number
   @Column login: string
   @Column password_hash: string
 
